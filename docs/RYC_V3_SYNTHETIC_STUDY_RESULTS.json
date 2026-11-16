@@ -1,0 +1,45 @@
+{
+  "scope": "synthetic mathematical scenarios; not Vietnam market observations",
+  "cases": [
+    {
+      "case": "upward_static_curve_interior_exit",
+      "objective": "maximise scenario-weighted terminal wealth over included alternatives",
+      "action": "MODEL_MAX_EXPECTED_EXIT",
+      "selected_date": "2026-04-03",
+      "selected_terminal_wealth_per_100": 95.73897921643841,
+      "runner_up_date": "2026-04-02",
+      "decision_margin_per_100": 4.664678186827587e-06,
+      "margin_exceeds_epsilon": false
+    },
+    {
+      "case": "upward_curve_high_cash_rate_exit_now",
+      "objective": "maximise scenario-weighted terminal wealth over included alternatives",
+      "action": "MODEL_MAX_EXPECTED_EXIT",
+      "selected_date": "2025-01-02",
+      "selected_terminal_wealth_per_100": 101.03336550479357,
+      "runner_up_date": "2025-01-03",
+      "decision_margin_per_100": 0.0027706487738612395,
+      "margin_exceeds_epsilon": true
+    },
+    {
+      "case": "upward_curve_rises_exit_now",
+      "objective": "maximise scenario-weighted terminal wealth over included alternatives",
+      "action": "MODEL_MAX_EXPECTED_EXIT",
+      "selected_date": "2025-01-02",
+      "selected_terminal_wealth_per_100": 92.32806373378138,
+      "runner_up_date": "2025-01-03",
+      "decision_margin_per_100": 0.00335913557798051,
+      "margin_exceeds_epsilon": true
+    },
+    {
+      "case": "flat_curve_matched_cash_no_timing_edge",
+      "objective": "maximise scenario-weighted terminal wealth over included alternatives",
+      "action": "MODEL_MAX_EXPECTED_EXIT",
+      "selected_date": "2025-01-02",
+      "selected_terminal_wealth_per_100": 92.32680001313886,
+      "runner_up_date": "2025-01-07",
+      "decision_margin_per_100": 0.0,
+      "margin_exceeds_epsilon": false
+    }
+  ]
+}

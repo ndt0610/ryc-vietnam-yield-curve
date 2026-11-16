@@ -1,0 +1,36 @@
+{
+  "mode": "holder",
+  "decision_date": "2026-01-05",
+  "terminal_date": "2026-12-15",
+  "position_face_value_vnd": 100000000,
+  "epsilon_bps": 10,
+  "minimum_robust_support": 1,
+  "bond": {
+    "identifier": "VN-DEMO-FIXED-2024",
+    "issue_date": "2024-01-02",
+    "cashflows": [
+      {"payment_date": "2027-07-02", "amount_per_100": 2},
+      {"payment_date": "2028-01-02", "amount_per_100": 102}
+    ]
+  },
+  "quote": {"bid_dirty_per_100": 99.3, "ask_dirty_per_100": 99.7},
+  "held_position": {"purchase_date": "2025-06-16", "purchase_dirty_per_100": 98.1},
+  "execution": {
+    "buy_fee_bps": 5,
+    "sell_fee_bps": 5,
+    "settlement_lag_business_days": 1,
+    "settlement_calendar_label": "weekend-only-method-assumption"
+  },
+  "curve_nodes": [
+    {"tenor_years": 0.25, "zero_rate_decimal": 0.038},
+    {"tenor_years": 1, "zero_rate_decimal": 0.04},
+    {"tenor_years": 3, "zero_rate_decimal": 0.0425},
+    {"tenor_years": 5, "zero_rate_decimal": 0.0445},
+    {"tenor_years": 10, "zero_rate_decimal": 0.047}
+  ],
+  "scenarios": [
+    {"name": "Base", "probability": 0.5, "terminal_level_shift_bps": 0, "terminal_slope_shift_bps": 0, "cash_rate_decimal": 0.04, "sell_haircut_bps": 20},
+    {"name": "Yield giảm", "probability": 0.25, "terminal_level_shift_bps": -55, "terminal_slope_shift_bps": -10, "cash_rate_decimal": 0.037, "sell_haircut_bps": 25},
+    {"name": "Yield tăng", "probability": 0.25, "terminal_level_shift_bps": 70, "terminal_slope_shift_bps": 20, "cash_rate_decimal": 0.045, "sell_haircut_bps": 45}
+  ]
+}
