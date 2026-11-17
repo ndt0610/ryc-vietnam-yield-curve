@@ -55,6 +55,7 @@ Test Python kiểm tra định giá, coupon/settlement, lưới phương án và
 
 ## Giới hạn cần đọc cùng kết quả
 
+- **Trạng thái nghiên cứu: `MODEL_ONLY / DECLARED_SYNTHETIC`.** Fixture dùng số liệu dựng để minh họa cách engine định giá và xếp hạng phương án; chưa dùng dữ liệu thị trường Việt Nam đã xác minh.
 - “Perfect Foresight” giả định biết trước đường cong lợi suất của cả kỳ; đây là điều kiện mô hình, **không phải dự báo**.
 - Fixture hiện tại là dữ liệu tổng hợp. Chưa có báo giá bid/fill hay kiểm định ngoài mẫu.
 - Khi ngày mục tiêu trước ngày đáo hạn, phần trái phiếu chưa bán được ghi nhận bằng model mark proxy; nó chưa phải tiền bán thu được.
