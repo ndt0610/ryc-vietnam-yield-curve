@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RYC Vietnam — Khung Định Lượng Xác Định Thời Điểm & Tỷ Lệ Bán Tối Ưu (Perfect Foresight)</title>
+  <meta name="description" content="Nền tảng nghiên cứu định lượng Riding the Yield Curve: Mô phỏng xác định thời điểm (t*) và tỷ lệ (q*) bán tối ưu trái phiếu trên thị trường Việt Nam.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #060b18;
+      --card: rgba(13, 22, 45, 0.92);
+      --card-hover: rgba(18, 30, 60, 0.95);
+      --border: rgba(56, 189, 248, 0.18);
+      --border-active: rgba(56, 189, 248, 0.5);
+      --border-accent: rgba(245, 158, 11, 0.4);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --dim: #64748b;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.35);
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.35);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.35);
+      --red: #ef4444;
+      --purple: #a855f7;
+      --indigo: #6366f1;
+      --radius: 12px;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 10% 5%, rgba(14, 165, 233, 0.15) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 90% 90%, rgba(245, 158, 11, 0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(168, 85, 247, 0.07) 0%, transparent 60%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13.5px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* TOP HEADER */
+    header {
+      background: rgba(6, 11, 24, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 28px;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+    }
+    .brand-wrap { display: flex; align-items: center; gap: 14px; }
+    .brand-badge {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #fff;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 0 18px var(--primary-glow);
+    }
+    .brand-title { font-size: 16px; font-weight: 800; color: #fff; font-family: 'Outfit', sans-serif; letter-spacing: 0.3px; }
+    .brand-sub { font-size: 11.5px; color: var(--muted); }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
+
+    /* CONTAINER */
+    .container { max-width: 1560px; margin: 0 auto; padding: 20px 24px 80px; }
+
+    /* DISCLAIMER BANNER */
+    .disclaimer-banner {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-left: 5px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .disclaimer-icon { font-size: 22px; flex-shrink: 0; }
+    .disclaimer-title { font-weight: 800; color: #fbbf24; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 3px; }
+    .disclaimer-text { color: #fde68a; font-size: 12.5px; line-height: 1.55; }
+
+    /* METHODOLOGY TIERS */
+    .method-pipeline {
+      background: rgba(12, 20, 42, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .pipeline-header {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pipeline-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    @media (max-width: 960px) { .pipeline-steps { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 540px) { .pipeline-steps { grid-template-columns: 1fr; } }
+    .step-card {
+      background: rgba(20, 32, 58, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .step-card:hover { border-color: var(--primary); transform: translateY(-2px); background: rgba(28, 44, 78, 0.9); }
+    .step-tag { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .step-card h4 { font-size: 12.5px; color: #f1f5f9; margin-bottom: 3px; font-weight: 700; }
+    .step-card p { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+    /* APP LAYOUT */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 22px;
+    }
+    @media (max-width: 1140px) { .app-layout { grid-template-columns: 1fr; } }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      height: fit-content;
+      position: sticky;
+      top: 76px;
+      max-height: calc(100vh - 96px);
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar { width: 5px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+
+    .panel-header {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .panel-tag { font-size: 10px; color: var(--primary); background: rgba(56, 189, 248, 0.12); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-weight: 700; }
+
+    .section-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin: 16px 0 8px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* PRESETS */
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+    .preset-btn {
+      background: rgba(15, 25, 48, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--muted);
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .preset-btn:hover { border-color: var(--primary); color: #fff; background: rgba(24, 38, 70, 0.9); }
+    .preset-btn.active {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+
+    /* FORM ELEMENTS */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .form-group { margin-bottom: 10px; }
+    .form-label {
+      font-size: 11.5px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .form-unit { font-size: 10px; color: var(--dim); font-family: 'JetBrains Mono', monospace; }
+
+    input[type="number"], input[type="date"], select {
+      width: 100%;
+      background: rgba(9, 16, 34, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 7px;
+      color: #fff;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+    select option { background: #0c1428; color: #fff; }
+
+    .slider-row { display: flex; align-items: center; gap: 8px; }
+    input[type="range"] {
+      flex: 1;
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+      accent-color: var(--primary);
+    }
+    .slider-val {
+      min-width: 58px;
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .btn-group-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #fff;
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.14); }
+
+    /* MAIN CONTENT */
+    .main-content { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+    /* TIMELINE PLAYBACK / SCRUBBER BAR */
+    .playback-bar {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(168, 85, 247, 0.1));
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow);
+    }
+    .playback-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .playback-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .playback-controls { display: flex; align-items: center; gap: 8px; }
+    .btn-play {
+      background: var(--primary);
+      color: #060b18;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-play:hover { background: #7dd3fc; }
+    .btn-ctrl {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-ctrl:hover { background: rgba(255, 255, 255, 0.16); }
+
+    .scrubber-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(6, 11, 24, 0.6);
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .scrubber-slider {
+      flex: 1;
+      height: 7px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .scrubber-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    .scrubber-badge {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid var(--border-accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    /* HERO BANNER */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(245, 158, 11, 0.12));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+    .badge {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-warn { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .badge-info { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); }
+    .badge-gray { background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.25); }
+    .badge-gold { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .hero-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px; font-family: 'Outfit', sans-serif; }
+    .hero-desc { font-size: 12.5px; color: var(--muted); }
+
+    /* KPI CARDS (5 CARDS GRID) */
+    .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+    .kpi-card:hover { transform: translateY(-3px); border-color: var(--border-active); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+    .kpi-label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+    .kpi-val { font-size: 18px; font-weight: 800; color: #fff; margin: 5px 0 3px; font-family: 'JetBrains Mono', monospace; word-break: break-all; }
+    .kpi-sub { font-size: 11px; color: var(--dim); }
+    .text-green { color: var(--green); }
+    .text-accent { color: var(--accent); }
+    .text-cyan { color: var(--primary); }
+
+    /* DECOMPOSITION BAR */
+    .decomp-card {
+      background: rgba(10, 18, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+    .decomp-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .decomp-bar {
+      display: flex;
+      height: 14px;
+      border-radius: 7px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.5);
+      margin-bottom: 12px;
+      gap: 2px;
+    }
+    .decomp-seg { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+    .decomp-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11.5px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* CHARTS GRID */
+    .charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    @media (max-width: 1440px) { .charts-grid { grid-template-columns: minmax(0, 1fr); } }
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      position: relative;
+      min-width: 0;
+    }
+    .chart-card.full-width { grid-column: 1 / -1; }
+    .chart-header {
+      font-size: 13px;
+      font-weight: 800;
+      color: #f1f5f9;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chart-badge { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+    .badge-cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+    .chart-svg { width: 100%; height: 250px; display: block; overflow: hidden; }
+
+    /* TOOLTIP */
+    .custom-tooltip {
+      position: fixed;
+      background: rgba(6, 11, 24, 0.98);
+      border: 1px solid var(--border-active);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #fff;
+      pointer-events: none;
+      z-index: 9999;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85);
+      max-width: 280px;
+      line-height: 1.5;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .custom-tooltip.show { opacity: 1; }
+    .custom-tooltip strong { color: var(--primary); }
+
+    /* YIELD TO PRICE CONVERTER CARD */
+    .calc-card {
+      background: rgba(13, 24, 48, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .calc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
+    @media (max-width: 1100px) { .calc-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 650px) { .calc-grid { grid-template-columns: 1fr 1fr; } }
+    .calc-item {
+      background: rgba(6, 11, 24, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .calc-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+    .calc-val { font-size: 14px; font-weight: 800; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+
+    /* TABLE */
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .table-wrap { overflow-x: auto; }
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.data-table th {
+      padding: 10px 14px;
+      text-align: left;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    table.data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    table.data-table td:first-child { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; }
+    table.data-table tr.row-opt td { background: rgba(16, 185, 129, 0.12); color: #6ee7b7; font-weight: 800; }
+    table.data-table tr.row-opt td:first-child::before { content: '★ '; color: #fbbf24; }
+    table.data-table tr:hover td { background: rgba(255, 255, 255, 0.04); }
+
+    /* EXPLANATION BOXES */
+    .reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .reason-grid { grid-template-columns: 1fr; } }
+    .reason-box {
+      background: rgba(10, 18, 38, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 12.8px;
+      line-height: 1.65;
+      color: #e2e8f0;
+    }
+    .driver-box {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #fde68a;
+    }
+
+    pre.formula-box {
+      background: rgba(6, 11, 24, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #38bdf8;
+      overflow-x: auto;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    /* ERROR */
+    .error-banner {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 8px;
+      color: #fca5a5;
+      padding: 12px 16px;
+      font-size: 13px;
+      display: none;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="custom-tooltip" id="tooltip"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="brand-wrap">
+    <div class="brand-badge">RYC VIETNAM</div>
+    <div>
+      <div class="brand-title">XÁC ĐỊNH THỜI ĐIỂM & TỶ LỆ BÁN TỐI ƯU TRÁI PHIẾU</div>
+      <div class="brand-sub">Riding the Yield Curve (RYC) Quantitative Simulation · Perfect Foresight · Illustrative VN bond assumptions</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="live-status"><div class="status-dot"></div><span id="hdrStatus">Hệ Thống Sẵn Sàng</span></div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer-banner">
+    <div class="disclaimer-icon">⚠️</div>
+    <div>
+      <div class="disclaimer-title">Cảnh Báo Bắt Buộc · Phạm Vi & Giới Hạn Mô Hình</div>
+      <div class="disclaimer-text">
+        Đây là bản demo thử nghiệm với đường giá tương lai được cho trước theo giả định. Kết quả minh họa cách so sánh tháng bán và tỷ lệ bán trên lưới phương án đã chọn; đây không phải dự báo hay kết luận của nghiên cứu RYC chính. Mệnh giá, quy mô và lãi suất trong các kịch bản là tham số minh họa, chưa được đối chiếu với một bộ dữ liệu thị trường Việt Nam cụ thể.
+      </div>
+    </div>
+  </div>
+
+  <!-- METHODOLOGY PIPELINE -->
+  <div class="method-pipeline">
+    <div class="pipeline-header">
+      <span>📐 Khung 4 Tầng Tư Duy Định Lượng & Quy Đổi Dòng Tiền (Kỳ hạn Tháng vs Lãi suất %/Năm)</span>
+      <span style="font-size:11px; color:var(--muted); font-weight:500;">Bấm vào từng tầng để xem cơ chế chi tiết</span>
+    </div>
+    <div class="pipeline-steps">
+      <div class="step-card" onclick="highlightTier(1)">
+        <div class="step-tag">Tầng 1</div>
+        <h4>1. Đường Cong Lãi Suất y(τ)</h4>
+        <p>Lãi suất Spot Yield theo năm (%/năm) dốc lên theo kỳ hạn τ (năm). Sau mỗi tháng s, τ rút ngắn → trượt xuống vùng lãi suất thấp hơn (Roll-down).</p>
+      </div>
+      <div class="step-card" onclick="highlightTier(2)">
+        <div class="step-tag">Tầng 2</div>
+        <h4>2. Quy Ngược Về Giá P(s)</h4>
+        <p>Lãi suất chiết khấu giảm theo hiệu ứng Roll-down làm giá trái phiếu P(s) tăng lên. Kết hợp với coupon định kỳ để xác định giá trị tài sản.</p>
+      </div>
+      <div class="step-card" onclick="highlightTier(3)">
+        <div class="step-tag">Tầng 3</div>
+        <h4>3. Quy Dòng Tiền Về Cuối Kỳ H</h4>
+        <p>Bán tại tháng s → tái đầu tư tiền mặt r_cash đến H. Phần giữ lại nhận coupon định kỳ, trừ chi phí lưu ký và phạt rủi ro theo tháng.</p>
+      </div>
+      <div class="step-card" onclick="highlightTier(4)">
+        <div class="step-tag">Tầng 4</div>
+        <h4>4. Tìm Điểm Cao Nhất Trên Lưới (t*, q*)</h4>
+        <p>Duyệt lưới (thời điểm s × tỷ lệ q) để tìm phương án có W(H) cao nhất trong các giá trị đã thử và xem kết quả đổi thế nào khi giả định thay đổi.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- LEFT SIDEBAR: CONTROLS -->
+    <aside class="sidebar">
+      <div class="panel-header">
+        <span>🎛️ Bảng Tham Số Thị Trường VN</span>
+        <span class="panel-tag">Live Engine</span>
+      </div>
+
+      <!-- PRESETS -->
+      <div class="section-title"><span>Kịch Bản Thị Trường (1-Click Presets)</span></div>
+      <div class="preset-grid">
+        <button class="preset-btn active" data-preset="base">🌟 Kịch Bản Cơ Sở</button>
+        <button class="preset-btn" data-preset="high_coupon">💰 Coupon Cao (8%)</button>
+        <button class="preset-btn" data-preset="low_growth">📉 Tăng Trưởng Thấp</button>
+        <button class="preset-btn" data-preset="high_growth">📈 Siêu Dốc / Tăng Trưởng</button>
+        <button class="preset-btn" data-preset="adverse_shock">⚡ Cú Sốc Bất Lợi</button>
+        <button class="preset-btn" data-preset="high_carry">🏛️ Chi Phí Vốn Cao</button>
+      </div>
+
+      <!-- BOND & PORTFOLIO ASSET SPEC -->
+      <div class="section-title"><span>💼 Tài Sản & Quy Mô Danh Mục</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Ngày bắt đầu</div>
+          <input type="date" id="start_date">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Kỳ phân tích H <span class="form-unit">tháng</span></div>
+          <input type="number" id="analysis_months" min="1" max="60" step="1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">Quy mô danh mục <span class="form-unit">VND</span></div>
+        <select id="face_value_vnd">
+          <option value="100000000">100 triệu VND (1.000 TP)</option>
+          <option value="500000000">500 triệu VND (5.000 TP)</option>
+          <option value="1000000000" selected>1 Tỷ VND (10.000 TP - Chuẩn)</option>
+          <option value="5000000000">5 Tỷ VND (50.000 TP)</option>
+          <option value="10000000000">10 Tỷ VND (100.000 TP)</option>
+          <option value="50000000000">50 Tỷ VND (Định chế)</option>
+          <option value="100000000000">100 Tỷ VND (Quỹ đầu tư)</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Giá P(0) <span class="form-unit">/100đ MG</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_price" min="80" max="110" step="0.1">
+            <span class="slider-val" id="val_price">-</span>
+          </div>
+          <input type="number" id="current_price_per_100" step="0.1" style="display:none">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Xu hướng giá <span class="form-unit">%/năm</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_trend" min="-5" max="10" step="0.1">
+            <span class="slider-val" id="val_trend">-</span>
+          </div>
+          <input type="number" id="asset_trend_pct_annual" step="0.1" style="display:none">
+        </div>
+      </div>
+
+      <!-- RATES -->
+      <div class="section-title"><span>📊 Lãi Suất Thị Trường VN (Annualized)</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Lãi tiền mặt r_cash <span class="form-unit">%/năm</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_cash" min="1" max="12" step="0.1">
+            <span class="slider-val" id="val_cash">-</span>
+          </div>
+          <input type="number" id="cash_rate_pct_annual" step="0.1" style="display:none">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Lãi suất Coupon <span class="form-unit">%/năm</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_coup" min="0" max="15" step="0.1">
+            <span class="slider-val" id="val_coup">-</span>
+          </div>
+          <input type="number" id="coupon_carry_pct_annual" step="0.1" style="display:none">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">Tăng trưởng vĩ mô g <span class="form-unit">%/năm</span></div>
+        <div class="slider-row">
+          <input type="range" id="sl_eco" min="-2" max="10" step="0.1">
+          <span class="slider-val" id="val_eco">-</span>
+        </div>
+        <input type="number" id="economic_growth_pct_annual" step="0.1" style="display:none">
+      </div>
+
+      <!-- FRICTIONS & COSTS -->
+      <div class="section-title"><span>⚖️ Phí Giao Dịch, Thuế & Chi Phí Nắm Giữ</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Phí bán <span class="form-unit">bps (0.1%=10bp)</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_fee" min="0" max="50" step="1">
+            <span class="slider-val" id="val_fee">-</span>
+          </div>
+          <input type="number" id="sell_fee_bps" step="1" style="display:none">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Thuế bán <span class="form-unit">bps (0.1%=10bp)</span></div>
+          <input type="number" id="tax_bps" step="1" min="0">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Phí lưu ký/nắm giữ <span class="form-unit">bp/năm</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_hold" min="0" max="150" step="5">
+            <span class="slider-val" id="val_hold">-</span>
+          </div>
+          <input type="number" id="holding_cost_bps_annual" step="5" style="display:none">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Tác động TK <span class="form-unit">bp/bán 100%</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_imp" min="0" max="100" step="2">
+            <span class="slider-val" id="val_imp">-</span>
+          </div>
+          <input type="number" id="market_impact_bps_full_sale" step="1" style="display:none">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Độ biến động Vol <span class="form-unit">%/năm</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_vol" min="0" max="25" step="0.5">
+            <span class="slider-val" id="val_vol">-</span>
+          </div>
+          <input type="number" id="volatility_pct_annual" step="0.5" style="display:none">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Phạt rủi ro <span class="form-unit">bp/vol</span></div>
+          <div class="slider-row">
+            <input type="range" id="sl_risk" min="0" max="60" step="1">
+            <span class="slider-val" id="val_risk">-</span>
+          </div>
+          <input type="number" id="risk_penalty_bps_per_vol_year" step="1" style="display:none">
+        </div>
+      </div>
+
+      <!-- SHOCK -->
+      <div class="section-title"><span>⚡ Cú Sốc Lãi Suất (Đặt độ lớn = 0 để tắt)</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Tháng xảy ra cú sốc</div>
+          <input type="number" id="shock_month" min="0" step="1">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Độ giảm giá <span class="form-unit">% P(0)</span></div>
+          <input type="number" id="shock_size_pct" step="0.5">
+        </div>
+      </div>
+
+      <!-- DECISION BOUNDS -->
+      <div class="section-title"><span>🔍 Không Gian Quyết Định (s × q)</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Bán sớm nhất <span class="form-unit">tháng</span></div>
+          <input type="number" id="earliest_sale_month" min="0" step="1">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Bán muộn nhất <span class="form-unit">tháng</span></div>
+          <input type="number" id="latest_sale_month" min="0" step="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Tỷ lệ bán min <span class="form-unit">%</span></div>
+          <input type="number" id="min_sale_pct" min="0" max="100" step="10">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Tỷ lệ bán max <span class="form-unit">%</span></div>
+          <input type="number" id="max_sale_pct" min="0" max="100" step="10">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Bước nhảy q <span class="form-unit">%</span></div>
+          <input type="number" id="sale_step_pct" min="1" max="50" step="5">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Dải gần TU <span class="form-unit">bps MG</span></div>
+          <input type="number" id="near_optimal_bps_of_face" min="0" step="1">
+        </div>
+      </div>
+
+      <div class="btn-group-row">
+        <button class="btn btn-primary" id="btnRun">▶ Chạy Mô Phỏng</button>
+        <button class="btn btn-secondary" id="btnReset">🔄 Mặc Định</button>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:8px;">
+        <button class="btn btn-secondary" id="btnExport" style="font-size:11.5px; padding:7px;">💾 Xuất JSON</button>
+        <button class="btn btn-secondary" id="btnPrint" style="font-size:11.5px; padding:7px;">📄 In Báo Cáo</button>
+      </div>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT -->
+    <section class="main-content">
+
+      <!-- ERROR BOX -->
+      <div class="error-banner" id="errBox"></div>
+
+      <!-- TIMELINE ANIMATED PLAYBACK & INTERACTIVE SCRUBBER -->
+      <div class="playback-bar">
+        <div class="playback-top">
+          <div class="playback-title">
+            <span>🎬 Trực Quan Hóa Quá Trình Theo Dòng Thời Gian (Timeline Playback)</span>
+            <span style="font-size:11px; color:var(--muted);">Kéo hoặc chạy hoạt họa để thấy dòng tiền vận động</span>
+          </div>
+          <div class="playback-controls">
+            <button class="btn-play" id="btnPlayAnim">▶ Xem Hoạt Họa</button>
+            <button class="btn-ctrl" id="btnStepAnim">⏭️ +1 Tháng</button>
+            <button class="btn-ctrl" id="btnResetAnim">⏹️ Về Tháng 0</button>
+            <select id="selAnimSpeed" style="width:auto; padding:4px 8px; font-size:11px;">
+              <option value="1200">0.5x Chậm</option>
+              <option value="600" selected>1.0x Chuẩn</option>
+              <option value="300">2.0x Nhanh</option>
+              <option value="150">4.0x Cực Nhanh</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="scrubber-wrap">
+          <span style="font-size:11px; color:var(--muted); font-weight:700;">Tháng s:</span>
+          <input type="range" class="scrubber-slider" id="timelineScrubber" min="0" max="18" step="1" value="0">
+          <div class="scrubber-info">
+            <span class="scrubber-badge" id="scrubberMonthLbl">Tháng 0 (Khởi đầu)</span>
+            <span style="color:var(--text); font-size:11.5px;">Giá P(s): <b id="scrubberPrice" style="color:var(--primary);">-</b></span>
+            <span style="color:var(--text); font-size:11.5px;">W(H) tại mốc này: <b id="scrubberObj" style="color:var(--green);">-</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO BANNER -->
+      <div class="hero-banner">
+        <div class="hero-badges">
+          <span class="badge badge-warn">DEMO · PERFECT FORESIGHT</span>
+          <span class="badge badge-info" id="scBadge">Kịch Bản Cơ Sở</span>
+          <span class="badge badge-gold" id="nearOptBadge">-</span>
+          <span class="badge badge-gray">Thị Trường Trái Phiếu VN</span>
+        </div>
+        <div class="hero-title" id="heroTitle">Đang tính toán tối ưu hóa...</div>
+        <div class="hero-desc" id="heroDesc">Duyệt toàn bộ lưới thời điểm và tỷ lệ bán khả thi theo nguyên lý thời giá tiền tệ quy về cuối kỳ H.</div>
+      </div>
+
+      <!-- KPI CARDS (5 CARDS) -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Thời Điểm Bán Tối Ưu t*</div>
+          <div class="kpi-val" id="kpiDate">—</div>
+          <div class="kpi-sub" id="kpiDateSub">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Tỷ Lệ Bán Tối Ưu q*</div>
+          <div class="kpi-val" id="kpiQty">—</div>
+          <div class="kpi-sub" id="kpiQtySub">Quy mô bán tối đa hóa W(H)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Thu Coupon Tích Lũy Đến H</div>
+          <div class="kpi-val text-accent" id="kpiCoup">—</div>
+          <div class="kpi-sub" id="kpiCoupSub">Tái đầu tư @ r_cash</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Giá Trị Tích Lũy W(H)</div>
+          <div class="kpi-val text-green" id="kpiObj">—</div>
+          <div class="kpi-sub" id="kpiObjSub">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Lợi Nhuận Vượt Trội (Lift)</div>
+          <div class="kpi-val text-cyan" id="kpiLift">—</div>
+          <div class="kpi-sub" id="kpiLiftSub">—</div>
+        </div>
+      </div>
+
+      <!-- DECOMPOSITION BAR -->
+      <div class="decomp-card">
+        <div class="decomp-head">
+          <span>Phân Rã Cấu Trúc Lợi Nhuận Tích Lũy W(H) Tại Điểm Tối Ưu</span>
+          <span id="decompRatio" style="color:var(--primary); font-family:'JetBrains Mono';">q* = 100% bán</span>
+        </div>
+        <div class="decomp-bar">
+          <div class="decomp-seg" id="segSale" style="width:50%; background:#38bdf8;" title="Tiền bán tái đầu tư"></div>
+          <div class="decomp-seg" id="segRem" style="width:35%; background:#a855f7;" title="Trái phiếu còn lại tại H"></div>
+          <div class="decomp-seg" id="segCoup" style="width:15%; background:#f59e0b;" title="Lãi coupon tích lũy"></div>
+        </div>
+        <div class="decomp-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#38bdf8;"></div><span>Tiền Bán Tái Đầu Tư @ r_cash: <b id="legSale" style="color:#38bdf8;">-</b></span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div><span>TP Còn Giữ Lại Tại H: <b id="legRem" style="color:#a855f7;">-</b></span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div><span>Lãi Coupon Nhận Được: <b id="legCoup" style="color:#f59e0b;">-</b></span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div><span>Chi Phí Nắm Giữ: <b id="legHold" style="color:#ef4444;">-</b></span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#64748b;"></div><span>Phạt Rủi Ro: <b id="legRisk" style="color:#94a3b8;">-</b></span></div>
+        </div>
+      </div>
+
+      <!-- YIELD TO PRICE & CASH FLOW CONVERTER CARD -->
+      <div class="calc-card">
+        <div class="pipeline-header" style="margin-bottom:6px;">
+          <span>⚡ Bảng Quy Đổi Lợi Suất → Giá & Dòng Tiền Trái Phiếu (Bond Analytics)</span>
+          <span style="font-size:11px; color:var(--muted);">Chuẩn hóa Mệnh giá 100.000 VNĐ · Benchmark 5 Năm</span>
+        </div>
+        <div class="calc-grid">
+          <div class="calc-item">
+            <div class="calc-lbl">Lãi Suất Coupon (C)</div>
+            <div class="calc-val" id="cCouponRate" style="color:#fbbf24;">-</div>
+            <div style="font-size:10.5px; color:var(--muted); margin-top:2px;" id="cCouponVnd">-</div>
+          </div>
+          <div class="calc-item">
+            <div class="calc-lbl">Spot Yield y(τ) Tại t*</div>
+            <div class="calc-val" id="cSpotYield" style="color:#a855f7;">-</div>
+            <div style="font-size:10.5px; color:var(--muted); margin-top:2px;" id="cTauRemain">τ = -</div>
+          </div>
+          <div class="calc-item">
+            <div class="calc-lbl">Giá P(t*) / 100đ MG</div>
+            <div class="calc-val" id="cPrice100">-</div>
+            <div style="font-size:10.5px; color:var(--muted); margin-top:2px;" id="cPriceVnd">-</div>
+          </div>
+          <div class="calc-item">
+            <div class="calc-lbl">Thời Lượng Macaulay</div>
+            <div class="calc-val" id="cMacDur">-</div>
+            <div style="font-size:10.5px; color:var(--muted); margin-top:2px;">Độ nhạy thời gian</div>
+          </div>
+          <div class="calc-item">
+            <div class="calc-lbl">Modified Duration</div>
+            <div class="calc-val" id="cModDur">-</div>
+            <div style="font-size:10.5px; color:var(--muted); margin-top:2px;">ΔP khi yield ±100bp</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 INTERACTIVE CHARTS -->
+      <div class="charts-grid">
+
+        <!-- CHART 1: YIELD CURVE -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <span>Tầng 1: Đường Cong Lợi Suất Spot Yield y(τ)</span>
+            <span class="chart-badge badge-purple">Roll-Down Effect</span>
+          </div>
+          <svg class="chart-svg" id="svgYield" viewBox="0 0 700 250"></svg>
+        </div>
+
+        <!-- CHART 2: PRICE TRAJECTORY -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <span>Tầng 2: Quỹ Đạo Giá Trái Phiếu P(s) Theo Tháng</span>
+            <span class="chart-badge badge-cyan">Giá Theo Giả Định</span>
+          </div>
+          <svg class="chart-svg" id="svgPrice" viewBox="0 0 700 250"></svg>
+        </div>
+
+        <!-- CHART 3: OBJECTIVE FUNCTION W(H) -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <span>Tầng 3: Hàm Mục Tiêu Giá Trị Tích Lũy W(H)</span>
+            <span class="chart-badge badge-emerald">Cao Nhất Trên Lưới</span>
+          </div>
+          <svg class="chart-svg" id="svgObj" viewBox="0 0 700 250"></svg>
+        </div>
+
+        <!-- CHART 4: HEATMAP (s x q) -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <span>Tầng 4: Bản Đồ Nhiệt Không Gian Quyết Định (s × q)</span>
+            <span class="chart-badge badge-amber">Bề Mặt Quyết Định</span>
+          </div>
+          <svg class="chart-svg" id="svgHeat" viewBox="0 0 700 250"></svg>
+        </div>
+
+        <!-- CHART 5: COMPARISON BAR (FULL WIDTH) -->
+        <div class="chart-card full-width">
+          <div class="chart-header">
+            <span>So Sánh Hiệu Quả Giữa Các Chiến Lược Giao Dịch</span>
+            <span class="chart-badge badge-cyan">Quy Đổi Về Cuối Kỳ H</span>
+          </div>
+          <svg class="chart-svg" id="svgComp" viewBox="0 0 700 220" style="height:220px;"></svg>
+        </div>
+
+        <!-- CHART 6: SENSITIVITY (FULL WIDTH) -->
+        <div class="chart-card full-width">
+          <div class="chart-header">
+            <span>Phân Tích Độ Nhạy Của Điểm Tối Ưu t* Trước Chi Phí & Xu Hướng</span>
+            <span class="chart-badge badge-amber">Sensitivity Engine</span>
+          </div>
+          <svg class="chart-svg" id="svgSens" viewBox="0 0 700 250"></svg>
+        </div>
+
+      </div>
+
+      <!-- STRATEGY COMPARISON TABLE -->
+      <div class="table-card">
+        <div class="chart-header">
+          <span>Bảng Đối Chiếu Chi Tiết 5 Chiến Lược Chuẩn Hóa</span>
+          <span style="font-size:11px; color:var(--muted);">Bấm vào từng hàng để tua nhanh thanh thời gian</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Chiến Lược</th>
+                <th>Ngày Bán (s)</th>
+                <th>Tỷ Lệ Bán (q*)</th>
+                <th>W(H) / 100đ MG</th>
+                <th>Tổng VND (Quy mô)</th>
+                <th>Chênh Lệch So Với Điểm Bán Tốt Nhất</th>
+              </tr>
+            </thead>
+            <tbody id="tblBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CAUSAL REASONING & DRIVERS -->
+      <div class="reason-grid">
+        <div class="reason-box">
+          <div style="font-weight:800; font-size:13px; color:var(--primary); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>💡 Giải Thích Động Lực Quyết Định</span>
+          </div>
+          <div id="boxExplain">Đang phân tích...</div>
+        </div>
+        <div class="driver-box">
+          <div style="font-weight:800; font-size:13px; color:#fbbf24; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>⚖️ Các Yếu Tố Chi Phối Cốt Lõi</span>
+          </div>
+          <div id="boxDrivers" style="white-space:pre-wrap;">Đang tổng hợp...</div>
+        </div>
+      </div>
+
+      <!-- FORMULA & ASSUMPTIONS -->
+      <div class="table-card">
+        <div class="chart-header">
+          <span>Công Thức Hàm Mục Tiêu & Cơ Sở Toán Học Đã Kiểm Chứng</span>
+        </div>
+        <pre class="formula-box" id="boxFormula"></pre>
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+<script src="ryc_perfect_foresight_demo_model.js"></script>
+<script>(function(){
+  "use strict";
+
+  const M = typeof window !== "undefined" ? window.RycPerfectForesightDemo : null;
+  let latestResult = null;
+  let animTimer = null;
+
+  const $ = id => typeof document !== "undefined" ? document.getElementById(id) : null;
+  const tt = $("tooltip");
+
+  function showTip(html, e) {
+    if (!tt) return;
+    tt.innerHTML = html;
+    tt.classList.add("show");
+    moveTip(e);
+  }
+  function moveTip(e) {
+    if (!tt) return;
+    const x = e.clientX, y = e.clientY;
+    const tw = tt.offsetWidth, th = tt.offsetHeight;
+    tt.style.left = (x + 14 + tw > window.innerWidth ? x - tw - 14 : x + 14) + "px";
+    tt.style.top = (y - th / 2 < 0 ? 8 : (y + th / 2 > window.innerHeight ? y - th : y - th / 2)) + "px";
+  }
+  function hideTip() { if (tt) tt.classList.remove("show"); }
+  if (typeof document !== "undefined" && document.addEventListener) {
+    document.addEventListener("mousemove", e => { if (tt && tt.classList.contains("show")) moveTip(e); });
+  }
+
+  // Formatters
+  function moneyFmt(v) {
+    const abs = Math.abs(Math.round(v));
+    if (abs >= 1e9) return (v < 0 ? "-" : "") + (Math.abs(v) / 1e9).toFixed(3) + " Tỷ VND";
+    if (abs >= 1e6) return (v < 0 ? "-" : "") + (Math.abs(v) / 1e6).toFixed(1) + " Triệu VND";
+    return Math.round(v).toLocaleString("vi-VN") + " VND";
+  }
+  function num2(v) { return Number(v).toFixed(2); }
+  function num4(v) { return Number(v).toFixed(4); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  // Sliders synchronization
+  const SLIDERS = [
+    ["sl_price", "val_price", "current_price_per_100", ""],
+    ["sl_trend", "val_trend", "asset_trend_pct_annual", "%"],
+    ["sl_cash", "val_cash", "cash_rate_pct_annual", "%"],
+    ["sl_coup", "val_coup", "coupon_carry_pct_annual", "%"],
+    ["sl_eco", "val_eco", "economic_growth_pct_annual", "%"],
+    ["sl_fee", "val_fee", "sell_fee_bps", " bp"],
+    ["sl_hold", "val_hold", "holding_cost_bps_annual", " bp"],
+    ["sl_imp", "val_imp", "market_impact_bps_full_sale", " bp"],
+    ["sl_vol", "val_vol", "volatility_pct_annual", "%"],
+    ["sl_risk", "val_risk", "risk_penalty_bps_per_vol_year", " bp"]
+  ];
+
+  SLIDERS.forEach(([sId, vId, hId, unit]) => {
+    const s = $(sId), v = $(vId), h = $(hId);
+    if (!s) return;
+    s.addEventListener("input", () => {
+      if (h) h.value = s.value;
+      if (v) v.textContent = parseFloat(s.value).toFixed(s.step < 1 ? 1 : 0) + unit;
+      scheduleRun();
+    });
+  });
+
+  const DIRECT_INPUTS = ["start_date", "analysis_months", "face_value_vnd", "tax_bps", "shock_month", "shock_size_pct", "earliest_sale_month", "latest_sale_month", "min_sale_pct", "max_sale_pct", "sale_step_pct", "near_optimal_bps_of_face"];
+  const HIDDEN_INPUTS = ["current_price_per_100", "cash_rate_pct_annual", "economic_growth_pct_annual", "asset_trend_pct_annual", "coupon_carry_pct_annual", "holding_cost_bps_annual", "sell_fee_bps", "market_impact_bps_full_sale", "volatility_pct_annual", "risk_penalty_bps_per_vol_year"];
+
+  function getConfigFromUI() {
+    const o = {};
+    DIRECT_INPUTS.forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      o[id] = id === "face_value_vnd" ? Number(el.value) : (el.type === "number" ? Number(el.value) : el.value);
+    });
+    HIDDEN_INPUTS.forEach(id => {
+      const el = $(id);
+      if (el) o[id] = Number(el.value);
+    });
+    if (typeof document !== "undefined" && document.querySelector) {
+      const act = document.querySelector(".preset-btn.active");
+      o.scenario = act && act.dataset ? act.dataset.preset : "base";
+    } else {
+      o.scenario = "base";
+    }
+    return o;
+  }
+
+  function setConfigToUI(cfg) {
+    DIRECT_INPUTS.forEach(id => {
+      const el = $(id);
+      if (!el || cfg[id] === undefined) return;
+      el.value = cfg[id];
+    });
+    HIDDEN_INPUTS.forEach(id => {
+      const el = $(id);
+      if (!el || cfg[id] === undefined) return;
+      el.value = cfg[id];
+    });
+    SLIDERS.forEach(([sId, vId, hId, unit]) => {
+      const s = $(sId), v = $(vId), h = $(hId);
+      if (!s || !h) return;
+      s.value = h.value;
+      if (v) v.textContent = parseFloat(h.value).toFixed(s.step < 1 ? 1 : 0) + unit;
+    });
+    const fv = $("face_value_vnd");
+    if (fv && cfg.face_value_vnd && fv.options) {
+      const opt = [...fv.options].find(o => Number(o.value) === Number(cfg.face_value_vnd));
+      if (opt) fv.value = cfg.face_value_vnd;
+    }
+  }
+
+  const EXTRA_PRESETS = {
+    high_coupon: {
+      label: "Coupon Cao (8%)",
+      overrides: {
+        coupon_carry_pct_annual: 8.0,
+        asset_trend_pct_annual: 1.5,
+        cash_rate_pct_annual: 4.5,
+        holding_cost_bps_annual: 30
+      }
+    },
+    high_carry: {
+      label: "Chi Phí Vốn Cao",
+      overrides: {
+        holding_cost_bps_annual: 120,
+        cash_rate_pct_annual: 6.0,
+        asset_trend_pct_annual: 0.5,
+        volatility_pct_annual: 8.0,
+        risk_penalty_bps_per_vol_year: 25
+      }
+    }
+  };
+
+  function applyPreset(pKey) {
+    if (!M) return;
+    const allPresets = Object.assign({}, M.PRESETS, EXTRA_PRESETS);
+    const pr = allPresets[pKey] || M.PRESETS.base;
+    const baseScenario = M.PRESETS[pKey] ? pKey : "base";
+    const merged = Object.assign({}, M.DEFAULT_CONFIG, pr.overrides, { scenario: baseScenario });
+    if (typeof document !== "undefined" && document.querySelectorAll) {
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active", b.dataset.preset === pKey));
+    }
+    setConfigToUI(merged);
+    runSimulation();
+  }
+
+  // Debounced runner
+  let runDebounce = null;
+  function scheduleRun() {
+    clearTimeout(runDebounce);
+    runDebounce = setTimeout(runSimulation, 40);
+  }
+
+  /* ==========================================================================
+     SVG CHART RENDERING & INTERACTIVE HOVER / CLICK
+     ========================================================================== */
+  const W = 700, H = 250, P = { l: 65, r: 20, t: 24, b: 42 }, PW = W - P.l - P.r, PH = H - P.t - P.b;
+  const sx = (v, mn, mx) => P.l + PW * (v - mn) / Math.max(1e-9, mx - mn);
+  const sy = (v, mn, mx) => H - P.b - PH * (v - mn) / Math.max(1e-9, mx - mn);
+
+  function gridSvg(mn, mx) {
+    let s = "";
+    for (let i = 0; i <= 4; i++) {
+      const fy = P.t + PH * i / 4;
+      const val = mx - (mx - mn) * i / 4;
+      s += `<line x1="${P.l}" y1="${fy.toFixed(1)}" x2="${W - P.r}" y2="${fy.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-dasharray="4,4"/>`;
+      s += `<text x="${(P.l - 6).toFixed(1)}" y="${(fy + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#64748b" font-family="monospace">${Number(val).toFixed(1)}</text>`;
+    }
+    return s;
+  }
+
+  function attachTooltipsAndClicks(svg) {
+    if (!svg || !svg.querySelectorAll) return;
+    svg.querySelectorAll(".interactive-node[data-tip]").forEach(el => {
+      el.addEventListener("mouseenter", e => {
+        const raw = el.getAttribute("data-tip");
+        const lines = raw.split("\n").map((l, i) => i === 0 ? `<strong>${esc(l)}</strong>` : esc(l)).join("<br>");
+        showTip(lines, e);
+      });
+      el.addEventListener("mousemove", moveTip);
+      el.addEventListener("mouseleave", hideTip);
+
+      const mAttr = el.getAttribute("data-month");
+      if (mAttr !== null) {
+        el.addEventListener("click", () => {
+          const m = parseInt(mAttr, 10);
+          setScrubberMonth(m);
+        });
+      }
+    });
+  }
+
+  function drawYieldCurveChart(res) {
+    const svg = $("svgYield");
+    if (!svg) return;
+    const ptsData = res.yield_curve;
+    const optNode = res.timeline.find(t => t.month === res.optimum.sale_month);
+    const ys = ptsData.map(n => n.spot_yield_pct);
+    const minX = 0, maxX = 32;
+    const minY = Math.max(0, Math.min(...ys) - 0.5), maxY = Math.max(...ys) + 0.8;
+    const X = v => sx(v, minX, maxX), Y = v => sy(v, minY, maxY);
+
+    let out = `<rect width="${W}" height="${H}" fill="rgba(9,16,34,0.6)" rx="8"/>`;
+    out += gridSvg(minY, maxY);
+    out += `<text x="${(W/2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#64748b">Kỳ hạn trái phiếu (năm τ)</text>`;
+
+    [0.5, 1, 2, 3, 5, 7, 10, 15, 20, 30].forEach(v => {
+      if (v <= maxX) {
+        out += `<text x="${X(v).toFixed(1)}" y="${(H - P.b + 14).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="#64748b">${v}y</text>`;
+      }
+    });
+
+    const ptsStr = ptsData.map(n => `${X(n.maturity_years).toFixed(1)},${Y(n.spot_yield_pct).toFixed(1)}`).join(" ");
+    out += `<polygon points="${X(ptsData[0].maturity_years).toFixed(1)},${(H - P.b).toFixed(1)} ${ptsStr} ${X(ptsData[ptsData.length - 1].maturity_years).toFixed(1)},${(H - P.b).toFixed(1)}" fill="rgba(168,85,247,0.12)"/>`;
+    out += `<polyline points="${ptsStr}" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linejoin="round"/>`;
+
+    ptsData.forEach(n => {
+      out += `<circle cx="${X(n.maturity_years).toFixed(1)}" cy="${Y(n.spot_yield_pct).toFixed(1)}" r="4" fill="#a855f7" class="interactive-node" data-tip="Kỳ hạn: ${n.maturity_years} Năm\nLợi suất: ${n.spot_yield_pct.toFixed(2)}%/năm" style="cursor:pointer;"/>`;
+    });
+
+    if (optNode) {
+      const ox = X(optNode.remaining_maturity_years), oy = Y(optNode.spot_yield_pct);
+      out += `<line x1="${ox.toFixed(1)}" y1="${P.t}" x2="${ox.toFixed(1)}" y2="${(H - P.b).toFixed(1)}" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,4"/>`;
+      out += `<circle cx="${ox.toFixed(1)}" cy="${oy.toFixed(1)}" r="8" fill="#fbbf24" class="interactive-node" data-month="${res.optimum.sale_month}" data-tip="★ Điểm t* Tối Ưu Roll-Down\nKỳ hạn còn: ${optNode.remaining_maturity_years} Năm\nLợi suất: ${optNode.spot_yield_pct}%/năm\n(Click để inspect)" style="cursor:pointer;"/>`;
+      out += `<text x="${ox.toFixed(1)}" y="${Math.max(P.t + 13, oy - 12).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="bold" fill="#fbbf24">t*</text>`;
+    }
+
+    svg.innerHTML = out;
+    attachTooltipsAndClicks(svg);
+  }
+
+  function drawPriceChart(res) {
+    const svg = $("svgPrice");
+    if (!svg) return;
+    const rows = res.timeline;
+    const xs = rows.map(x => x.month), ys = rows.map(x => x.price_per_100);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys) - 0.5, maxY = Math.max(...ys) + 0.6;
+    const X = v => sx(v, minX, maxX), Y = v => sy(v, minY, maxY);
+
+    let out = `<rect width="${W}" height="${H}" fill="rgba(9,16,34,0.6)" rx="8"/>`;
+    out += gridSvg(minY, maxY);
+    out += `<text x="${(W/2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#64748b">Tháng trong kỳ phân tích (0 đến H)</text>`;
+
+    if (res.config.shock_size_pct !== 0 && res.config.shock_month <= maxX) {
+      const sx2 = X(res.config.shock_month);
+      out += `<rect x="${sx2.toFixed(1)}" y="${P.t}" width="${(W - P.r - sx2).toFixed(1)}" height="${PH}" fill="rgba(239,68,68,0.08)"/>`;
+      out += `<line x1="${sx2.toFixed(1)}" y1="${P.t}" x2="${sx2.toFixed(1)}" y2="${(H - P.b).toFixed(1)}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,4"/>`;
+      out += `<text x="${(sx2 + 4).toFixed(1)}" y="${(P.t + 14).toFixed(1)}" font-size="10" font-weight="bold" fill="#f87171">Cú Sốc -${res.config.shock_size_pct}%</text>`;
+    }
+
+    const ptsStr = rows.map(r => `${X(r.month).toFixed(1)},${Y(r.price_per_100).toFixed(1)}`).join(" ");
+    out += `<polygon points="${X(xs[0]).toFixed(1)},${(H - P.b).toFixed(1)} ${ptsStr} ${X(xs[xs.length - 1]).toFixed(1)},${(H - P.b).toFixed(1)}" fill="rgba(56,189,248,0.12)"/>`;
+    out += `<polyline points="${ptsStr}" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linejoin="round"/>`;
+
+    rows.forEach(r => {
+      const x = X(r.month), y = Y(r.price_per_100);
+      const isOpt = r.month === res.optimum.sale_month;
+      out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isOpt ? 8 : 4}" fill="${isOpt ? '#f59e0b' : '#38bdf8'}" class="interactive-node" data-month="${r.month}" data-tip="Tháng ${r.month} (${r.date})\nGiá: ${num2(r.price_per_100)} / 100đ MG\nGiá TP: ${Math.round(r.price_per_100 * 1000).toLocaleString('vi-VN')} VND/TP\n(Click để inspect)" style="cursor:pointer;"/>`;
+      if (isOpt) {
+        out += `<line x1="${x.toFixed(1)}" y1="${P.t}" x2="${x.toFixed(1)}" y2="${(H - P.b).toFixed(1)}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,4"/>`;
+        out += `<text x="${x.toFixed(1)}" y="${Math.max(P.t + 14, y - 12).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="bold" fill="#fbbf24">t*=${r.month}</text>`;
+      }
+    });
+
+    svg.innerHTML = out;
+    attachTooltipsAndClicks(svg);
+  }
+
+  function getBestByMonth(res) {
+    const m = new Map();
+    res.surface.forEach(row => {
+      const cur = m.get(row.sale_month);
+      if (!cur || row.objective_per_100 > cur.objective_per_100) m.set(row.sale_month, row);
+    });
+    return Array.from(m.values()).sort((a, b) => a.sale_month - b.sale_month);
+  }
+
+  function drawObjectiveChart(res) {
+    const svg = $("svgObj");
+    if (!svg) return;
+    const rows = getBestByMonth(res);
+    const xs = rows.map(x => x.sale_month), ys = rows.map(x => x.objective_per_100);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys) * 0.9995, maxY = Math.max(...ys) * 1.0005;
+    const X = v => sx(v, minX, maxX), Y = v => sy(v, minY, maxY);
+
+    let out = `<rect width="${W}" height="${H}" fill="rgba(9,16,34,0.6)" rx="8"/>`;
+    out += gridSvg(minY, maxY);
+    out += `<text x="${(W/2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#64748b">Tháng bán s (W quy về cuối kỳ H)</text>`;
+
+    const tol = (res.config.near_optimal_bps_of_face / 10000) * 100;
+    const bandY = Y(res.optimum.objective_per_100 - tol);
+    out += `<rect x="${P.l}" y="${bandY.toFixed(1)}" width="${PW}" height="${(H - P.b - bandY).toFixed(1)}" fill="rgba(16,185,129,0.08)" rx="2"/>`;
+    out += `<line x1="${P.l}" y1="${bandY.toFixed(1)}" x2="${W - P.r}" y2="${bandY.toFixed(1)}" stroke="#10b981" stroke-width="1" stroke-dasharray="4,4"/>`;
+    out += `<text x="${(W - P.r - 4).toFixed(1)}" y="${(bandY - 3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#10b981">Vùng Gần Tối Ưu (±${res.config.near_optimal_bps_of_face}bp)</text>`;
+
+    const ptsStr = rows.map(r => `${X(r.sale_month).toFixed(1)},${Y(r.objective_per_100).toFixed(1)}`).join(" ");
+    out += `<polygon points="${X(xs[0]).toFixed(1)},${(H - P.b).toFixed(1)} ${ptsStr} ${X(xs[xs.length - 1]).toFixed(1)},${(H - P.b).toFixed(1)}" fill="rgba(168,85,247,0.12)"/>`;
+    out += `<polyline points="${ptsStr}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linejoin="round"/>`;
+
+    rows.forEach(r => {
+      const x = X(r.sale_month), y = Y(r.objective_per_100);
+      const isOpt = r.sale_month === res.optimum.sale_month;
+      out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isOpt ? 8 : 4}" fill="${isOpt ? '#fbbf24' : '#10b981'}" class="interactive-node" data-month="${r.sale_month}" data-tip="Tháng ${r.sale_month} (${r.sale_date})\nW(H): ${num2(r.objective_per_100)} / 100đ MG\nTổng VND: ${moneyFmt(r.objective_vnd)}\nBán: ${num2(r.sale_pct)}%\n(Click để inspect)" style="cursor:pointer;"/>`;
+      if (isOpt) {
+        out += `<line x1="${x.toFixed(1)}" y1="${P.t}" x2="${x.toFixed(1)}" y2="${(H - P.b).toFixed(1)}" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,4"/>`;
+        out += `<text x="${x.toFixed(1)}" y="${Math.max(P.t + 14, y - 12).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="bold" fill="#fbbf24">W* Max</text>`;
+      }
+    });
+
+    svg.innerHTML = out;
+    attachTooltipsAndClicks(svg);
+  }
+
+  function drawHeatmapChart(res) {
+    const svg = $("svgHeat");
+    if (!svg) return;
+    const rows = res.surface;
+    const months = [...new Set(rows.map(x => x.sale_month))].sort((a, b) => a - b);
+    const qs = [...new Set(rows.map(x => Math.round(x.sale_pct * 10) / 10))].sort((a, b) => a - b);
+    const mn = Math.min(...rows.map(x => x.objective_per_100)), mx = Math.max(...rows.map(x => x.objective_per_100));
+    const cw = PW / Math.max(1, months.length), ch = PH / Math.max(1, qs.length);
+
+    let out = `<rect width="${W}" height="${H}" fill="rgba(9,16,34,0.6)" rx="8"/>`;
+    out += `<text x="${(W/2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#64748b">Tháng bán s</text>`;
+    out += `<text x="12" y="${(H/2).toFixed(1)}" transform="rotate(-90 12 ${H/2})" text-anchor="middle" font-size="11" fill="#64748b">Tỷ lệ bán q (%)</text>`;
+
+    const stride = Math.max(1, Math.round(months.length / 6));
+    months.forEach((m, i) => {
+      if (i % stride === 0 || i === months.length - 1) {
+        const x = P.l + i * cw + cw / 2;
+        out += `<text x="${x.toFixed(1)}" y="${(H - P.b + 14).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="#64748b">${m}</text>`;
+      }
+    });
+
+    const qstr = Math.max(1, Math.round(qs.length / 5));
+    qs.forEach((q, i) => {
+      if (i % qstr === 0 || i === qs.length - 1) {
+        const y = P.t + (qs.length - 1 - i) * ch + ch / 2;
+        out += `<text x="${(P.l - 4).toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#64748b">${q}%</text>`;
+      }
+    });
+
+    rows.forEach(r => {
+      const mi = months.indexOf(r.sale_month), qi = qs.indexOf(Math.round(r.sale_pct * 10) / 10);
+      if (mi < 0 || qi < 0) return;
+      const x = P.l + mi * cw, y = P.t + (qs.length - 1 - qi) * ch;
+      const t = (r.objective_per_100 - mn) / Math.max(1e-9, mx - mn);
+      const rc = Math.round(10 + 225 * t), gc = Math.round(35 + 165 * t), bc = Math.round(160 - 80 * t);
+      const isOpt = r.sale_month === res.optimum.sale_month && Math.abs(r.sale_pct - res.optimum.sale_pct) < 1e-6;
+
+      out += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1, cw - 1).toFixed(1)}" height="${Math.max(1, ch - 1).toFixed(1)}" fill="rgb(${rc},${gc},${bc})" class="interactive-node" data-month="${r.sale_month}" data-tip="Tháng ${r.sale_month}, Bán ${num2(r.sale_pct)}%\nW(H): ${num2(r.objective_per_100)} / 100đ MG\nVND: ${moneyFmt(r.objective_vnd)}\n(Click để inspect)" style="cursor:pointer;"/>`;
+      if (isOpt) {
+        out += `<rect x="${(x + 1).toFixed(1)}" y="${(y + 1).toFixed(1)}" width="${Math.max(1, cw - 3).toFixed(1)}" height="${Math.max(1, ch - 3).toFixed(1)}" fill="none" stroke="#fbbf24" stroke-width="2.5"/>`;
+      }
+    });
+
+    svg.innerHTML = out;
+    attachTooltipsAndClicks(svg);
+  }
+
+  function drawComparisonBarChart(res) {
+    const svg = $("svgComp");
+    if (!svg) return;
+    const H2 = 220, PH2 = H2 - P.t - P.b;
+    const rows = res.comparisons.filter((x, i, a) => a.findIndex(y => y.key === x.key) === i);
+    const ys = rows.map(x => x.objective_per_100);
+    const minY = Math.min(...ys) * 0.9993, maxY = Math.max(...ys) * 1.0005;
+    const Y = v => H2 - P.b - PH2 * (v - minY) / Math.max(1e-9, maxY - minY);
+    const bw = (PW / rows.length) * 0.62;
+
+    let out = `<rect width="${W}" height="${H2}" fill="rgba(9,16,34,0.6)" rx="8"/>`;
+    for (let i = 0; i <= 4; i++) {
+      const fy = P.t + PH2 * i / 4, val = maxY - (maxY - minY) * i / 4;
+      out += `<line x1="${P.l}" y1="${fy.toFixed(1)}" x2="${W - P.r}" y2="${fy.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-dasharray="4,4"/>`;
+      out += `<text x="${(P.l - 5).toFixed(1)}" y="${(fy + 4).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#64748b" font-family="monospace">${val.toFixed(1)}</text>`;
+    }
+
+    rows.forEach((r, i) => {
+      const bx = P.l + (PW * (i + 0.5) / rows.length) - bw / 2;
+      const by = Y(r.objective_per_100), bh = H2 - P.b - by;
+      const isOpt = r.key === "toi_uu";
+      const fillCol = isOpt ? "#10b981" : "#38bdf8";
+
+      out += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="${fillCol}" opacity="${isOpt ? 0.95 : 0.6}" rx="4" class="interactive-node" data-month="${r.sale_month}" data-tip="${esc(r.label)}\nNgày bán: ${r.sale_date}\nBán: ${num2(r.sale_pct)}%\nW(H): ${num2(r.objective_per_100)} / 100đ MG\nTổng VND: ${moneyFmt(r.objective_vnd)}\n(Click để inspect)" style="cursor:pointer;"/>`;
+      if (isOpt) {
+        out += `<rect x="${(bx - 2).toFixed(1)}" y="${(by - 2).toFixed(1)}" width="${(bw + 4).toFixed(1)}" height="${(bh + 2).toFixed(1)}" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="5,3" rx="5"/>`;
+      }
+      out += `<text x="${(bx + bw/2).toFixed(1)}" y="${(by - 5).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="bold" fill="${isOpt ? '#6ee7b7' : '#e2e8f0'}">${num2(r.objective_per_100)}</text>`;
+      out += `<text x="${(bx + bw/2).toFixed(1)}" y="${(H2 - P.b + 13).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="#cbd5e1">${esc(r.label)}</text>`;
+      out += `<text x="${(bx + bw/2).toFixed(1)}" y="${(H2 - P.b + 25).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#94a3b8">q=${num2(r.sale_pct)}%</text>`;
+    });
+
+    svg.innerHTML = out;
+    attachTooltipsAndClicks(svg);
+  }
+
+  function drawSensitivityChart(res) {
+    const svg = $("svgSens");
+    if (!svg || !res.sensitivity) return;
+    const rA = res.sensitivity.holding_cost, rB = res.sensitivity.asset_trend;
+    const allM = [...rA.map(x => x.optimum_month), ...rB.map(x => x.optimum_month)];
+    const maxM = Math.max(res.config.analysis_months, ...allM), n = rA.length;
+    const X = i => sx(i, 0, Math.max(n - 1, 1)), Y = v => sy(v, 0, maxM);
+
+    let out = `<rect width="${W}" height="${H}" fill="rgba(9,16,34,0.6)" rx="8"/>`;
+    for (let i = 0; i <= 4; i++) {
+      const fy = P.t + PH * i / 4, val = maxM - maxM * i / 4;
+      out += `<line x1="${P.l}" y1="${fy.toFixed(1)}" x2="${W - P.r}" y2="${fy.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-dasharray="4,4"/>`;
+      out += `<text x="${(P.l - 5).toFixed(1)}" y="${(fy + 4).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#64748b" font-family="monospace">${Math.round(val)}th</text>`;
+    }
+
+    function renderPath(list, color, tipFn) {
+      const pts = list.map((r, i) => `${X(i).toFixed(1)},${Y(r.optimum_month).toFixed(1)}`).join(" ");
+      out += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      list.forEach((r, i) => {
+        out += `<circle cx="${X(i).toFixed(1)}" cy="${Y(r.optimum_month).toFixed(1)}" r="5" fill="${color}" class="interactive-node" data-month="${r.optimum_month}" data-tip="${tipFn(r)}\n(Click để inspect)" style="cursor:pointer;"/>`;
+      });
+    }
+
+    renderPath(rA, "#f59e0b", r => `Phí nắm giữ: ${r.holding_cost_bps_annual} bp\nt* tối ưu: Tháng ${r.optimum_month}\nW(H): ${num2(r.objective_per_100)}`);
+    renderPath(rB, "#38bdf8", r => `Xu hướng giá: ${num2(r.asset_trend_pct_annual)}%/năm\nt* tối ưu: Tháng ${r.optimum_month}\nW(H): ${num2(r.objective_per_100)}`);
+
+    out += `<text x="${(P.l + 6).toFixed(1)}" y="${P.t + 14}" font-size="11" fill="#f59e0b" font-weight="700">■ Phí Nắm Giữ</text>`;
+    out += `<text x="${(P.l + 130).toFixed(1)}" y="${P.t + 14}" font-size="11" fill="#38bdf8" font-weight="700">■ Xu Hướng Giá</text>`;
+    out += `<text x="${(W/2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#64748b">Biến thiên các yếu tố quanh cấu hình hiện tại</text>`;
+
+    svg.innerHTML = out;
+    attachTooltipsAndClicks(svg);
+  }
+
+  function renderYieldToPriceCard(res) {
+    const optRow = res.timeline.find(t => t.month === res.optimum.sale_month) || res.timeline[0];
+    const p100 = optRow.price_per_100;
+    const pVnd = Math.round(p100 * 1000);
+    const tau = optRow.remaining_maturity_years;
+    const y = optRow.spot_yield_pct / 100;
+    const c = res.config.coupon_carry_pct_annual / 100;
+
+    const macDur = ((1 + y) / Math.max(1e-6, y)) - ((1 + y + tau * (c - y)) / (c * (Math.pow(1 + y, tau) - 1) + Math.max(1e-6, y)));
+    const modDur = macDur / (1 + y);
+
+    const annualCouponVnd = (res.config.face_value_vnd * c);
+
+    if ($("cCouponRate")) $("cCouponRate").textContent = num2(res.config.coupon_carry_pct_annual) + " %/năm";
+    if ($("cCouponVnd")) $("cCouponVnd").textContent = moneyFmt(annualCouponVnd) + " / năm";
+    if ($("cSpotYield")) $("cSpotYield").textContent = num2(optRow.spot_yield_pct) + " %/năm";
+    if ($("cTauRemain")) $("cTauRemain").textContent = `τ = ${num2(tau)} Năm còn lại`;
+    if ($("cPrice100")) $("cPrice100").textContent = num2(p100) + " / 100đ";
+    if ($("cPriceVnd")) $("cPriceVnd").textContent = pVnd.toLocaleString("vi-VN") + " VNĐ/TP";
+    if ($("cMacDur")) $("cMacDur").textContent = Math.max(0.1, macDur).toFixed(2) + " Năm";
+    if ($("cModDur")) $("cModDur").textContent = Math.max(0.1, modDur).toFixed(2) + " (%/100bp)";
+  }
+
+  function renderCausalReasoning(res) {
+    const bestRows = getBestByMonth(res);
+    const holdBeatsBestSale = res.hold_to_h && res.hold_to_h.objective_per_100 > res.optimum.objective_per_100 + 1e-9;
+    const prev = bestRows.find(x => x.sale_month === Math.max(res.config.earliest_sale_month, res.optimum.sale_month - 1));
+    const next = bestRows.find(x => x.sale_month === Math.min(res.config.latest_sale_month, res.optimum.sale_month + 1));
+    const drivers = [];
+
+    if (prev && prev.sale_month !== res.optimum.sale_month) {
+      drivers.push(`So với tháng trước (t=${prev.sale_month}): W(H) cao hơn ${num4(res.optimum.objective_per_100 - prev.objective_per_100)} / 100đ MG (Tương đương +${moneyFmt((res.optimum.objective_per_100 - prev.objective_per_100) * res.config.face_value_vnd / 100)})`);
+    }
+    if (next && next.sale_month !== res.optimum.sale_month) {
+      drivers.push(`So với tháng sau (t=${next.sale_month}): W(H) cao hơn ${num4(res.optimum.objective_per_100 - next.objective_per_100)} / 100đ MG`);
+    }
+    if (res.config.coupon_carry_pct_annual >= 5.0) {
+      drivers.push(`Lãi suất Coupon cao (${num2(res.config.coupon_carry_pct_annual)}%/năm) tạo dòng tiền carry ổn định, đóng góp +${moneyFmt((res.optimum.coupon_carry_at_h_per_100 || 0) * res.config.face_value_vnd / 100)} vào tổng giá trị cuối kỳ H`);
+    }
+    if (res.config.holding_cost_bps_annual > 60 || res.config.risk_penalty_bps_per_vol_year > 20) {
+      drivers.push("Chi phí nắm giữ và phạt rủi ro cao tạo áp lực bán sớm hơn để bảo toàn dòng tiền");
+    }
+    if (res.config.asset_trend_pct_annual + res.config.economic_growth_pct_annual * 0.35 > 3.5) {
+      drivers.push("Hiệu ứng trượt kỳ hạn (Roll-down) và xu hướng tăng giá mạnh khuyến khích giữ vị thế để gặt hái thặng dư vốn");
+    }
+    if (res.config.shock_size_pct > 0) {
+      drivers.push(`Cú sốc giảm giá ~${res.config.shock_size_pct}% xảy ra quanh tháng ${res.config.shock_month} — mô hình tự động nhận diện và đề xuất thoát vị thế TRƯỚC cú sốc`);
+    }
+
+    if ($("boxExplain")) $("boxExplain").textContent = holdBeatsBestSale
+      ? `Trong các phương án bán thật q>0, tháng ${res.optimum.sale_month} (${res.optimum.sale_date}) với tỷ lệ bán ${num2(res.optimum.sale_pct)}% là điểm bán tốt nhất. Tuy nhiên phương án giữ đến H đang cao hơn ${num4(res.hold_to_h.objective_per_100 - res.optimum.objective_per_100)} / 100đ MG, nên kết luận tổng thể của kịch bản này là KHÔNG BÁN nếu không bị ràng buộc phải bán.`
+      : `Tại kịch bản hiện tại, tháng ${res.optimum.sale_month} (${res.optimum.sale_date}) với tỷ lệ bán ${num2(res.optimum.sale_pct)}% được chọn vì đạt giá trị tích lũy W(H) cao nhất trong các quyết định bán thật q>0. Quy mô danh mục: ${moneyFmt(res.config.face_value_vnd)} — Giá trị mục tiêu bán tối ưu: ${moneyFmt(res.optimum.objective_vnd)}.`;
+    if ($("boxDrivers")) $("boxDrivers").textContent = drivers.length ? `Các yếu tố chi phối cốt lõi:
+• ${drivers.join("\n• ")}` : "Các phương án bán đang cho kết quả tương đối gần nhau; nên cân nhắc toàn bộ dải gần tối ưu.";
+  }
+
+  function renderDecomposition(res) {
+    const opt = res.optimum;
+    const gross = (opt.sale_net_at_h_per_100 || 0) + (opt.remaining_value_at_h_per_100 || 0) + (opt.coupon_carry_at_h_per_100 || 0);
+    const sPct = gross > 0 ? Math.max(0, (opt.sale_net_at_h_per_100 || 0) / gross * 100) : 50;
+    const rPct = gross > 0 ? Math.max(0, (opt.remaining_value_at_h_per_100 || 0) / gross * 100) : 40;
+    const cPct = gross > 0 ? Math.max(0, (opt.coupon_carry_at_h_per_100 || 0) / gross * 100) : 10;
+
+    if ($("segSale")) $("segSale").style.width = sPct + "%";
+    if ($("segRem")) $("segRem").style.width = rPct + "%";
+    if ($("segCoup")) $("segCoup").style.width = cPct + "%";
+
+    const scale = res.config.face_value_vnd / 100;
+    if ($("legSale")) $("legSale").textContent = moneyFmt((opt.sale_net_at_h_per_100 || 0) * scale);
+    if ($("legRem")) $("legRem").textContent = moneyFmt((opt.remaining_value_at_h_per_100 || 0) * scale);
+    if ($("legCoup")) $("legCoup").textContent = "+" + moneyFmt((opt.coupon_carry_at_h_per_100 || 0) * scale);
+    if ($("legHold")) $("legHold").textContent = "-" + moneyFmt((opt.holding_cost_at_h_per_100 || 0) * scale);
+    if ($("legRisk")) $("legRisk").textContent = "-" + moneyFmt((opt.risk_penalty_at_h_per_100 || 0) * scale);
+
+    if ($("decompRatio")) $("decompRatio").textContent = `q* = ${num2(opt.sale_pct)}% bán · ${num2(100 - opt.sale_pct)}% giữ lại`;
+  }
+
+  const PRESET_LABELS = {
+    base: "Kịch Bản Cơ Sở",
+    low_growth: "Tăng Trưởng Thấp",
+    high_growth: "Siêu Dốc / Tăng Trưởng",
+    adverse_shock: "Cú Sốc Bất Lợi",
+    high_coupon: "Coupon Cao (8%)",
+    high_carry: "Chi Phí Vốn Cao"
+  };
+
+  function renderDashboard(res) {
+    latestResult = res;
+    if ($("errBox")) $("errBox").style.display = "none";
+
+    if ($("scBadge")) $("scBadge").textContent = PRESET_LABELS[res.config.scenario] || res.config.scenario;
+    const holdBeatsBestSale = res.hold_to_h && res.hold_to_h.objective_per_100 > res.optimum.objective_per_100 + 1e-9;
+    if ($("heroTitle")) $("heroTitle").textContent = holdBeatsBestSale
+      ? `★ Kết Luận: Giữ đến H tốt hơn bán; điểm bán tốt nhất là ${num2(res.optimum.sale_pct)}% vào ${res.optimum.sale_date}`
+      : `★ Điểm Bán Tối Ưu: Bán ${num2(res.optimum.sale_pct)}% vào ${res.optimum.sale_date} → W(H) = ${moneyFmt(res.optimum.objective_vnd)}`;
+    if ($("heroDesc")) $("heroDesc").textContent = holdBeatsBestSale
+      ? `Kỳ phân tích đến: ${res.terminal_date} · Giữ đến H cao hơn bán tốt nhất ${num4(res.hold_to_h.objective_per_100 - res.optimum.objective_per_100)} / 100đ MG · ${res.near_optimal.length} tổ hợp bán gần tối ưu`
+      : `Kỳ phân tích đến: ${res.terminal_date} · Quy mô: ${moneyFmt(res.config.face_value_vnd)} · ${res.near_optimal.length} tổ hợp bán gần tối ưu (±${res.config.near_optimal_bps_of_face} bp)`;
+
+    if ($("kpiDate")) $("kpiDate").textContent = res.optimum.sale_date;
+    if ($("kpiDateSub")) $("kpiDateSub").textContent = `Tháng ${res.optimum.sale_month} / ${res.config.analysis_months}`;
+    if ($("kpiQty")) $("kpiQty").textContent = num2(res.optimum.sale_pct) + "%";
+    if ($("kpiQtySub")) $("kpiQtySub").textContent = `Bán ${Math.round((res.config.face_value_vnd / 100000) * (res.optimum.sale_pct / 100)).toLocaleString()} TP`;
+
+    const couponTotalVnd = (res.optimum.coupon_carry_at_h_per_100 || 0) * (res.config.face_value_vnd / 100);
+    if ($("kpiCoup")) $("kpiCoup").textContent = "+" + moneyFmt(couponTotalVnd);
+    if ($("kpiCoupSub")) $("kpiCoupSub").textContent = `Coupon ${num2(res.config.coupon_carry_pct_annual)}%/năm quy về H`;
+
+    if ($("kpiObj")) $("kpiObj").textContent = moneyFmt(res.optimum.objective_vnd);
+    if ($("kpiObjSub")) $("kpiObjSub").textContent = `${num2(res.optimum.objective_per_100)} / 100đ Mệnh Giá`;
+
+    const signed = v => v == null ? "—" : `${v >= 0 ? "+" : ""}${num2(v)}/100đ`;
+    const liftNow = signed(res.lift_vs_sell_now_per_100);
+    const liftHold = signed(res.lift_vs_hold_to_h_per_100);
+    if ($("kpiLift")) $("kpiLift").textContent = liftNow;
+    if ($("kpiLiftSub")) $("kpiLiftSub").textContent = `So Bán ngay: ${liftNow} · So Giữ H: ${liftHold}`;
+
+    const nBadge = $("nearOptBadge");
+    if (nBadge) {
+      nBadge.textContent = `${res.near_optimal.length} Tổ Hợp Gần Tối Ưu`;
+      nBadge.style.display = "inline-block";
+    }
+
+    if ($("boxFormula")) $("boxFormula").textContent = res.formula;
+
+    // Timeline Scrubber Sync
+    const scrubber = $("timelineScrubber");
+    if (scrubber) {
+      scrubber.max = res.config.analysis_months;
+      setScrubberMonth(res.optimum.sale_month);
+    }
+
+    renderDecomposition(res);
+    renderYieldToPriceCard(res);
+    drawYieldCurveChart(res);
+    drawPriceChart(res);
+    drawObjectiveChart(res);
+    drawHeatmapChart(res);
+    drawComparisonBarChart(res);
+    drawSensitivityChart(res);
+    renderCausalReasoning(res);
+
+    if ($("tblBody")) {
+      $("tblBody").innerHTML = res.comparisons.map(r => `
+        <tr class="${r.key === 'toi_uu' ? 'row-opt' : ''}" onclick="setScrubberMonth(${r.sale_month})" style="cursor:pointer;">
+          <td>${esc(r.label)}</td>
+          <td>${esc(r.sale_date)}</td>
+          <td>${num2(r.sale_pct)}%</td>
+          <td>${num2(r.objective_per_100)}</td>
+          <td>${moneyFmt(r.objective_vnd)}</td>
+          <td style="color:${r.gap_to_optimum_vnd === 0 ? '#10b981' : '#94a3b8'}">
+            ${r.gap_to_optimum_vnd === 0 ? '★ Bán tốt nhất' : (r.gap_to_optimum_vnd < 0 ? '+' : '') + moneyFmt(-r.gap_to_optimum_vnd)}
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    if ($("hdrStatus")) $("hdrStatus").textContent = "Cập nhật " + new Date().toLocaleTimeString("vi-VN");
+  }
+
+  function setScrubberMonth(m) {
+    if (!latestResult) return;
+    const scrubber = $("timelineScrubber");
+    if (scrubber) scrubber.value = m;
+    const row = latestResult.timeline.find(t => t.month === m) || latestResult.timeline[0];
+    const bestAtM = getBestByMonth(latestResult).find(t => t.month === m) || latestResult.optimum;
+
+    if ($("scrubberMonthLbl")) $("scrubberMonthLbl").textContent = `Tháng ${m} (${row.date})`;
+    if ($("scrubberPrice")) $("scrubberPrice").textContent = `${num2(row.price_per_100)} / 100đ (${Math.round(row.price_per_100 * 1000).toLocaleString('vi-VN')} VND/TP)`;
+    if ($("scrubberObj")) $("scrubberObj").textContent = `${moneyFmt(bestAtM.objective_vnd)} (Bán ${num2(bestAtM.sale_pct)}%)`;
+  }
+
+  if ($("timelineScrubber")) {
+    $("timelineScrubber").addEventListener("input", e => {
+      setScrubberMonth(parseInt(e.target.value, 10));
+    });
+  }
+
+  // Animation Playback
+  function stopAnimation() {
+    if (animTimer) {
+      clearInterval(animTimer);
+      animTimer = null;
+      if ($("btnPlayAnim")) $("btnPlayAnim").textContent = "▶ Xem Hoạt Họa";
+    }
+  }
+
+  function startAnimation() {
+    if (!latestResult) return;
+    stopAnimation();
+    let curMonth = parseInt($("timelineScrubber").value, 10) || 0;
+    const maxMonth = latestResult.config.analysis_months;
+    const speed = parseInt($("selAnimSpeed").value, 10) || 600;
+
+    if ($("btnPlayAnim")) $("btnPlayAnim").textContent = "⏸ Tạm Dừng";
+
+    animTimer = setInterval(() => {
+      curMonth++;
+      if (curMonth > maxMonth) {
+        curMonth = 0;
+      }
+      setScrubberMonth(curMonth);
+      if (curMonth === latestResult.optimum.sale_month) {
+        if ($("scrubberMonthLbl")) $("scrubberMonthLbl").style.borderColor = "#fbbf24";
+      } else {
+        if ($("scrubberMonthLbl")) $("scrubberMonthLbl").style.borderColor = "var(--border-accent)";
+      }
+    }, speed);
+  }
+
+  if ($("btnPlayAnim")) {
+    $("btnPlayAnim").addEventListener("click", () => {
+      if (animTimer) {
+        stopAnimation();
+      } else {
+        startAnimation();
+      }
+    });
+  }
+
+  if ($("btnStepAnim")) {
+    $("btnStepAnim").addEventListener("click", () => {
+      stopAnimation();
+      if (!latestResult) return;
+      let m = (parseInt($("timelineScrubber").value, 10) || 0) + 1;
+      if (m > latestResult.config.analysis_months) m = 0;
+      setScrubberMonth(m);
+    });
+  }
+
+  if ($("btnResetAnim")) {
+    $("btnResetAnim").addEventListener("click", () => {
+      stopAnimation();
+      setScrubberMonth(0);
+    });
+  }
+
+  // Run Simulation Handler
+  function runSimulation() {
+    const btn = $("btnRun");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "⏳ Đang tính...";
+    }
+    if ($("hdrStatus")) $("hdrStatus").textContent = "Đang chạy mô phỏng...";
+    if ($("errBox")) $("errBox").style.display = "none";
+
+    setTimeout(() => {
+      try {
+        if (!M || !M.evaluatePerfectForesight) throw new Error("Mô hình RycPerfectForesightDemo chưa sẵn sàng.");
+        const cfg = M.normalizeConfig(getConfigFromUI());
+        const res = M.evaluatePerfectForesight(cfg);
+        renderDashboard(res);
+      } catch (e) {
+        const eb = $("errBox");
+        if (eb) {
+          eb.textContent = "⚠️ Lỗi tính toán: " + ((e && e.message) || String(e));
+          eb.style.display = "block";
+        }
+        if ($("hdrStatus")) $("hdrStatus").textContent = "Lỗi";
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "▶ Chạy Mô Phỏng";
+        }
+      }
+    }, 20);
+  }
+
+  // Preset Buttons
+  if (typeof document !== "undefined" && document.querySelectorAll) {
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => applyPreset(btn.dataset.preset));
+    });
+  }
+
+  if ($("btnRun")) $("btnRun").addEventListener("click", runSimulation);
+  if ($("btnReset")) {
+    $("btnReset").addEventListener("click", () => {
+      if (typeof document !== "undefined" && document.querySelectorAll) {
+        document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+        const b0 = document.querySelector('[data-preset="base"]');
+        if (b0) b0.classList.add("active");
+      }
+      if (M) setConfigToUI(M.DEFAULT_CONFIG);
+      runSimulation();
+    });
+  }
+
+  if ($("btnExport")) {
+    $("btnExport").addEventListener("click", () => {
+      if (!latestResult) return;
+      const blob = new Blob([JSON.stringify(latestResult, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ryc_vietnam_perfect_foresight_report.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+    });
+  }
+
+  if ($("btnPrint")) {
+    $("btnPrint").addEventListener("click", () => {
+      window.print();
+    });
+  }
+
+  // Auto attach change listeners to direct inputs
+  DIRECT_INPUTS.forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("change", scheduleRun);
+    el.addEventListener("input", scheduleRun);
+  });
+
+  // Global helper to highlight tiers
+  if (typeof window !== "undefined") {
+    window.highlightTier = function(tierNum) {
+      if (tierNum === 1 && $("svgYield")) $("svgYield").scrollIntoView({ behavior: "smooth", block: "center" });
+      if (tierNum === 2 && $("svgPrice")) $("svgPrice").scrollIntoView({ behavior: "smooth", block: "center" });
+      if (tierNum === 3 && $("svgObj")) $("svgObj").scrollIntoView({ behavior: "smooth", block: "center" });
+      if (tierNum === 4 && $("svgHeat")) $("svgHeat").scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+  }
+
+  // Initial Load
+  if (M) {
+    setConfigToUI(M.DEFAULT_CONFIG);
+    runSimulation();
+  }
+
+})();</script>
+</body>
+</html>

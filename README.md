@@ -25,6 +25,12 @@ Given a declared curve, cash-rate scenarios, coupon schedule, quote, transaction
 - Holder-plan and model-only interfaces with cash ledger, scenario comparison and declared limits.
 - Synthetic study artifacts and mathematical, property-style, acceptance and local-server checks.
 
+## Interactive side demo: when to sell, and how much?
+
+[Open the Perfect Foresight demo](demos/perfect-foresight/ryc_perfect_foresight_demo.html) to explore a separate, deliberately simplified question: **if the future price path were known, which sale month `t*` and sale share `q*` maximize cash at a common horizon `H`?** The page shows the objective curve, a `(month, share)` heatmap, nearby alternatives and sensitivity to changed assumptions. It keeps **hold to H** as a separate comparison, so a 0% sale cannot be mislabeled as an optimal sale date.
+
+This demo uses a future path supplied in advance. It is a teaching aid for the decision mechanics, **not** a forecast or the conclusion of the main RYC research model. [Read its assumptions and controls](demos/perfect-foresight/README.md).
+
 ## Run locally
 
 Python 3.11 or later is required. The application uses the standard library.
