@@ -31,6 +31,8 @@ Given a declared curve, cash-rate scenarios, coupon schedule, quote, transaction
 
 This demo uses a future path supplied in advance. It is a teaching aid for the decision mechanics, **not** a forecast or the conclusion of the main RYC research model. [Read its assumptions and controls](demos/perfect-foresight/README.md).
 
+![Perfect Foresight base case: hold to H beats the best sale found on the tested grid; the best sale is 10% on 2027-07-05.](demos/perfect-foresight/perfect-foresight-default-case.png)
+
 ## Run locally
 
 Python 3.11 or later is required. The application uses the standard library.

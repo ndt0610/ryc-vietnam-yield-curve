@@ -2,9 +2,9 @@
 
 **Câu hỏi của demo:** nếu đã biết trước toàn bộ đường giá giả định, bán trái phiếu ở tháng nào (`t*`) và bán bao nhiêu phần trăm (`q*`) để giá trị tiền tại kỳ cuối `H` lớn nhất?
 
-![Giao diện demo cho thấy phương án giữ đến H cao hơn điểm bán tốt nhất trên lưới ở kịch bản cơ sở giả lập.](decision-summary.jpg)
+![Giao diện demo ở kịch bản cơ sở: giữ đến H cao hơn điểm bán tốt nhất trên lưới; điểm bán tốt nhất là 10% vào ngày 05/07/2027.](perfect-foresight-default-case.png)
 
-*Kịch bản cơ sở minh họa: điểm bán tốt nhất trên lưới là bán 10% ở tháng 18, nhưng giữ đến H vẫn cho W(H) cao hơn khoảng 10.107 VND trên danh mục 100 triệu VND. Vì vậy kết luận tổng thể của kịch bản là giữ, không phải bán.*
+*Ảnh được chụp từ giao diện demo ở kịch bản cơ sở. Điểm bán tốt nhất trong lưới là 10% ở tháng 18, nhưng giữ đến H vẫn cho W(H) cao hơn khoảng 10.107 VND trên danh mục 100 triệu VND. Đây là kết quả của đường giá giả định đã biết trước, không phải dự báo.*
 
 [Mở trang demo](ryc_perfect_foresight_demo.html) trực tiếp trong trình duyệt. Chọn một trong bốn kịch bản, đổi chi phí hoặc đường giá, rồi quan sát:
 
