@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f8">
+  <title>RYC Vietnam · Phân tích quyết định giữ hay bán trái phiếu</title>
+  <link rel="stylesheet" href="./ryc_perfect_foresight_workspace.css">
+  <link rel="stylesheet" href="./ryc_perfect_foresight_workspace_light.css">
+</head>
+<body>
+  <div id="fileProtocolWarning" role="alert" hidden style="margin:16px auto;max-width:1588px;padding:18px 22px;border:2px solid #b97825;border-radius:12px;background:#fff3de;color:#3e2b12;font:16px/1.5 system-ui,sans-serif">
+    <strong>Trang đang được mở bằng file:// nên không thể kết nối Python V3.</strong>
+    <span style="display:block;margin-top:6px">Từ thư mục gốc repository, chạy <code>python demos/perfect-foresight/app/ryc_v3_local_server.py --host 127.0.0.1 --port 8772</code>, rồi mở <a href="http://127.0.0.1:8772/ryc_perfect_foresight_workspace.html" style="color:#175a85">http://127.0.0.1:8772/ryc_perfect_foresight_workspace.html</a>.</span>
+  </div>
+  <script>if (window.location.protocol === 'file:') document.getElementById('fileProtocolWarning').hidden = false;</script>
+  <main class="app-shell">
+    <header class="site-header">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">RYC</span><div><strong>RYC Vietnam</strong><small>Phân tích quyết định trái phiếu</small></div></div>
+      <div class="header-right"><span class="pill" id="apiStatus" role="status">Đang kết nối mô hình…</span></div>
+    </header>
+    <nav class="view-tabs" role="tablist" aria-label="Không gian phân tích">
+      <button type="button" class="view-tab" id="tabPF" role="tab" aria-selected="true" aria-controls="pfWorkspace">So sánh giữ và bán</button>
+      <button type="button" class="view-tab" id="tabRegret" role="tab" aria-selected="false" aria-controls="regretWorkspace">Khi lãi suất khác giả định</button>
+    </nav>
+    <section class="intro" id="pfIntro" aria-labelledby="pfTitle"><div><span class="eyebrow">BẢN PHÂN TÍCH QUYẾT ĐỊNH · MÔ HÌNH GIẢ ĐỊNH</span><h1 id="pfTitle">Giữ hay bán trái phiếu trước ngày mục tiêu?</h1><p>So sánh giá trị tài sản tại cùng ngày mục tiêu, sau phí và tái đầu tư. Mô hình giả định biết trước đường cong lợi suất của cả kỳ.</p><div class="intro-facts"><span id="currentBond">Trái phiếu —</span><span id="currentDecision">Ngày phân tích —</span><span id="currentTerminal">Ngày mục tiêu —</span><span id="currentPosition">Mệnh giá —</span><span id="currentScenario">Đường cong phẳng</span></div></div><div class="intro-action"><a href="#decisionSummary">Xem kết luận ↓</a><a href="#pfSidebar">Đổi giả định</a><small>Dữ liệu tổng hợp · kết quả mô hình</small></div></section>
+    <section class="intro" id="regretIntro" hidden aria-labelledby="regretTitle"><div><span class="eyebrow">Kiểm tra kế hoạch · dữ liệu tổng hợp</span><h1 id="regretTitle">Nếu lãi suất đi khác giả định, kế hoạch kém đi bao nhiêu?</h1><p>Giữ nguyên kế hoạch đã chọn, tính lại giá trị trên diễn biến dùng để đánh giá, rồi so với phương án tốt nhất nếu được nhìn lại toàn bộ diễn biến.</p></div></section>
+    <div class="workspace-grid">
+      <aside class="sidebar" aria-label="Bảng điều khiển">
+        <section class="panel sidebar-panel" id="pfSidebar">
+          <div class="panel-head"><div><span class="eyebrow">Bước 1</span><h2>Chọn giả định</h2></div></div>
+          <p class="sub">Chọn một tình huống, chỉnh vị thế và phí bán, rồi bấm Tính phương án.</p>
+          <div class="preset-list" aria-label="Kịch bản mẫu">
+            <button type="button" class="preset" data-preset="flat"><strong>Đường cong phẳng</strong><small>Lãi suất các kỳ hạn ngang nhau</small></button>
+            <button type="button" class="preset" data-preset="steep"><strong>Dốc lên</strong><small>Kỳ hạn dài có lãi suất cao hơn</small></button>
+            <button type="button" class="preset" data-preset="inverted"><strong>Đảo ngược</strong><small>Kỳ hạn ngắn có lãi suất cao hơn</small></button>
+            <button type="button" class="preset" data-preset="shock"><strong>Sốc lãi suất</strong><small>Đường cong tăng sau ngày đầu</small></button>
+            <button type="button" class="preset" data-preset="cash_rise"><strong>Lãi tiền mặt tăng</strong><small>Cơ hội tái đầu tư tăng</small></button>
+            <button type="button" class="preset" data-preset="high_cost"><strong>Phí bán cao</strong><small>Phí lệnh và tác động thị trường tăng</small></button>
+          </div>
+          <p class="preset-help" id="presetDescription">Các tình huống là dữ liệu tổng hợp; chọn để thấy quyết định thay đổi ra sao.</p>
+          <div class="assumption-strip"><strong>Giả định đang dùng</strong><p id="assumptionSummary" aria-live="polite">Đang tải lãi suất và chi phí…</p></div>
+          <div class="rule"></div>
+          <div class="panel-head"><h3>Đầu vào chính</h3></div>
+          <div class="control-list">
+            <div class="control"><div class="control-head"><label for="ctl-position">Mệnh giá vị thế <span class="control-unit">VND</span></label><input class="control-value" id="num-position" aria-label="Mệnh giá vị thế VND" inputmode="decimal" data-control="position_face_value_vnd" type="number" min="1000000" max="1000000000" step="1000000"></div><input class="range" id="ctl-position" data-control="position_face_value_vnd" type="range" min="1000000" max="1000000000" step="1000000"></div>
+            <div class="control"><div class="control-head"><label for="ctl-sell-fee">Phí bán <span class="control-unit">bps</span></label><input class="control-value" id="num-sell-fee" aria-label="Phí bán bps" inputmode="decimal" data-control="sell_fee_bps" type="number" min="0" max="300" step="1"></div><input class="range" id="ctl-sell-fee" data-control="sell_fee_bps" type="range" min="0" max="300" step="1"></div>
+          </div>
+          <div class="sidebar-actions"><button id="runButton" class="primary" type="button">Tính phương án</button><p class="sub">Đổi giả định xong, bấm để cập nhật kết luận.</p></div>
+          <div id="errorBox" class="error" role="alert" hidden></div>
+          <details id="advancedConfig"><summary>Cấu hình nâng cao · phí, lot và số đợt</summary><div class="advanced-body"><div class="control-list">
+            <div class="control"><div class="control-head"><label for="ctl-fixed-fee">Phí mỗi lệnh <span class="control-unit">VND</span></label><input class="control-value" id="num-fixed-fee" aria-label="Phí mỗi lệnh VND" inputmode="decimal" data-control="fixed_ticket_fee_vnd" type="number" min="0" max="1000000" step="1000"></div><input class="range" id="ctl-fixed-fee" data-control="fixed_ticket_fee_vnd" type="range" min="0" max="1000000" step="1000"></div>
+            <div class="control"><div class="control-head"><label for="ctl-impact">Market impact <span class="control-unit">bps / full sale</span></label><input class="control-value" id="num-impact" aria-label="Tác động thị trường bps" inputmode="decimal" data-control="market_impact_bps_full_sale" type="number" min="0" max="500" step="1"></div><input class="range" id="ctl-impact" data-control="market_impact_bps_full_sale" type="range" min="0" max="500" step="1"></div>
+            <div class="control"><div class="control-head"><label for="ctl-exponent">Độ lồi impact <span class="control-unit">α</span></label><input class="control-value" id="num-exponent" aria-label="Độ lồi tác động thị trường" inputmode="decimal" data-control="market_impact_exponent" type="number" min="1" max="4" step="0.1"></div><input class="range" id="ctl-exponent" data-control="market_impact_exponent" type="range" min="1" max="4" step="0.1"></div>
+          </div>
+          <div class="rule"></div>
+          <div class="panel-head"><h3>Miền bán</h3><span class="sub">Theo phần trăm mệnh giá đầu</span></div>
+          <div class="control-list">
+            <div class="control"><div class="control-head"><label for="ctl-step">Bước lot <span class="control-unit">%</span></label><input class="control-value" id="num-step" aria-label="Bước lot phần trăm" inputmode="decimal" data-control="sale_step_pct" type="number" min="5" max="100" step="5"></div><input class="range" id="ctl-step" data-control="sale_step_pct" data-range-index="true" type="range" min="0" max="5" step="1"></div>
+            <div class="control"><div class="control-head"><label for="ctl-min-sale">Bán tối thiểu / lệnh <span class="control-unit">%</span></label><input class="control-value" id="num-min-sale" aria-label="Tỷ lệ bán tối thiểu phần trăm" inputmode="decimal" data-control="min_sale_pct" type="number" min="5" max="100" step="5"></div><input class="range" id="ctl-min-sale" data-control="min_sale_pct" type="range" min="5" max="100" step="5"></div>
+            <div class="control"><div class="control-head"><label for="ctl-tranches">Số đợt tối đa</label><input class="control-value" id="num-tranches" aria-label="Số đợt bán tối đa" inputmode="decimal" data-control="max_tranches" type="number" min="1" max="2" step="1"></div><input class="range" id="ctl-tranches" data-control="max_tranches" type="range" min="1" max="2" step="1"></div>
+          </div></div></details>
+          <details id="advancedInspector"><summary>Chỉnh dữ liệu JSON</summary><div class="advanced-body"><p>Dùng JSON cho đường cong, lãi tiền mặt và lịch. Các thanh trượt chỉ chỉnh một số trường.</p><label class="upload-label">Tải payload JSON <input id="upload" type="file" accept=".json,application/json"></label><textarea id="jsonEditor" spellcheck="false" aria-label="Payload JSON cho API"></textarea></div></details>
+        </section>
+        <section class="panel sidebar-panel" id="regretSidebar" hidden>
+          <div class="panel-head"><div><span class="eyebrow">Dữ liệu đánh giá</span><h2>Chọn kết quả mô phỏng</h2></div></div>
+          <p class="sub">Xem ví dụ hai kỳ hoặc tải kết quả JSON do Python tạo. Đây là minh họa, chưa phải giao dịch thực tế.</p>
+          <div class="source-actions"><button id="loadRegretExample" class="secondary" type="button">Tải ví dụ 2 cửa sổ</button><label class="upload-label">Tải tệp kết quả JSON <input id="regretUpload" type="file" accept=".json,application/json"></label></div>
+          <details id="regretMethod"><summary>Chi tiết nguồn và phương pháp</summary><div class="advanced-body"><p class="sub" id="regretSourceInfo">Chưa tải kết quả P3-B.</p><div class="sidebar-lock">MODEL_ONLY · CURVE_LEVEL_SIMULATION<br>CURVE_MODEL_REGRET<br>EMPIRICAL_EXECUTION_LOCKED</div></div></details>
+          <div id="regretError" class="error" role="alert" hidden></div>
+        </section>
+      </aside>
+      <div class="analysis-area">
+        <section id="pfWorkspace" role="tabpanel" aria-labelledby="tabPF">
+          <div class="state-box" id="pfEmpty"><strong>Đang nạp kịch bản mẫu</strong><span>Chạy Python V3 để hiển thị phương án và các biểu đồ.</span></div>
+          <section id="results" hidden aria-label="Kết quả phân tích">
+            <div id="decisionSummary" class="decision-summary" aria-live="polite"><span class="eyebrow">PHƯƠNG ÁN CÓ GIÁ TRỊ CAO NHẤT TRONG LƯỚI XÉT</span><h2 id="decisionTitle">Đang tính phương án</h2><div class="decision-wealth-label">Giá trị tài sản ước tính tại ngày mục tiêu</div><strong id="decisionWealth">—</strong><div id="marginCallout" class="margin-callout" role="status">Đang kiểm tra độ lớn chênh lệch</div><div class="decision-metrics"><div><span>Hơn phương án kế tiếp trong toàn bộ lưới</span><strong id="decisionAdvantage">—</strong></div><div><span>Vị thế còn nắm giữ tại ngày mục tiêu</span><strong id="remainingPosition">—</strong></div></div><p id="decisionExplanation"></p><p id="decisionBasis"></p><p id="inputBasis"></p><div class="decision-actions"><a href="#comparisonTable">Xem biểu đồ & bảng so sánh</a><a href="#calculationDetails">Xem cách tính</a><a href="#pfSidebar">Đổi giả định</a></div></div>
+            <div id="staleNotice" class="stale-notice" hidden role="status"><div><strong>Kết quả lần chạy trước</strong><span>Giả định đã thay đổi. Các số bên dưới vẫn thuộc lần tính trước.</span></div><button id="rerunButton" class="primary" type="button">Tính lại</button></div>
+            <section id="comparisonTable" class="panel comparison-panel" aria-labelledby="comparisonTitle"><div class="section-head"><div><span class="eyebrow">CÙNG NGÀY · CÙNG VỊ THẾ BAN ĐẦU</span><h2 id="comparisonTitle">Giữ hay bán: khác nhau bao nhiêu?</h2></div></div><p class="sub">Giá trị gồm tiền đã thu và, nếu còn giữ trái phiếu, giá trị mô hình của phần đó tại ngày mục tiêu. Số đợt là số lần bán, tỷ lệ là phần mệnh giá ban đầu.</p><div class="comparison-visual"><div><h3>Chênh lệch giá trị tại H so với giữ</h3><p>Mốc 0 là giữ đến ngày mục tiêu. Thanh bên trái là kém giữ; bên phải là hơn giữ.</p></div><div id="comparisonChart" class="comparison-chart" role="img" aria-label="Biểu đồ so sánh giá trị bán một hoặc hai đợt với giữ"></div><p id="comparisonInsight" class="comparison-insight"></p></div><div class="table-wrap"><table class="comparison-table"><thead><tr><th>Phương án</th><th>Lịch bán</th><th>Giá trị tại ngày mục tiêu</th><th>So với giữ</th></tr></thead><tbody id="comparisonRows"></tbody></table></div><p id="comparisonScope" class="comparison-scope"></p></section>
+            <details id="calculationDetails" class="calculation-details"><summary>Chi tiết tính toán và phạm vi mô hình</summary><div class="calculation-body"><div class="banner"><strong>MODEL_ONLY</strong><span id="scope"></span><span>Phần còn giữ khi H &lt; M là giá trị mô hình, chưa phải tiền bán.</span></div><div class="cards">
+              <article class="card"><h3>Giữ đến H</h3><div class="card-kind" id="hold_to_hKind"></div><div class="value" id="hold_to_hValue"></div><div class="detail" id="hold_to_hSales"></div></article>
+              <article class="card"><h3>Bán 1 đợt tốt nhất</h3><div class="card-kind" id="best_single_saleKind"></div><div class="value" id="best_single_saleValue"></div><div class="detail" id="best_single_saleSales"></div></article>
+              <article class="card"><h3>Bán 2 đợt tốt nhất</h3><div class="card-kind" id="best_two_trancheKind"></div><div class="value" id="best_two_trancheValue"></div><div class="detail" id="best_two_trancheSales"></div></article>
+              <article class="card best"><h3>Tối ưu tổng thể</h3><div class="card-kind" id="expected_maximiserKind"></div><div class="value" id="expected_maximiserValue"></div><div class="detail" id="expected_maximiserSales"></div></article>
+            </div>
+            <div class="metrics"><div class="metric"><h3>Giá trị quyền chia 2 đợt</h3><strong id="twoValue"></strong><p>Hai đợt so với phương án bán một đợt do Python tính.</p></div><div class="metric"><h3>Biên độ quyết định / ngưỡng</h3><strong id="decisionMargin"></strong><p>Ngưỡng kinh tế là diagnostic, không đổi hàm mục tiêu.</p></div></div>
+            <div class="price-row"><div class="metric"><h3>Định giá hiện tại</h3><strong id="currentPrice"></strong><p id="priceBasis"></p><p id="riskStatus"></p></div></div>
+            </div></details>
+            <div id="markNotice" class="banner" hidden><strong>Giá trị ước tính</strong><span>Phần trái phiếu chưa bán được định giá tại ngày mục tiêu; chưa phải tiền đã thu.</span></div>
+            <details class="curve-detail" open><summary>Đường cong lợi suất theo ngày</summary><section class="panel timeline" aria-label="Diễn biến đường cong"><div class="timeline-top"><div><h2>Diễn biến lãi suất giả định</h2><p class="sub">Chọn ngày để xem đường cong thay đổi.</p></div><div class="timeline-actions"><button id="playButton" class="secondary" type="button" aria-pressed="false">Phát</button><button id="stepButton" class="secondary" type="button">Ngày tiếp theo</button></div></div><div class="timeline-track"><span class="sub mono">Ngày</span><input id="curveSlider" class="range" type="range" min="0" max="0" value="0" aria-label="Chọn snapshot đường cong"><span class="mono" id="curveDate">—</span></div><p class="timeline-status" id="playbackStatus">Chọn ngày để xem đường cong.</p></section>
+            <section class="panel chart-panel"><div class="chart-head"><div><h2>Đường cong lợi suất</h2><p class="sub">Mỗi đường là giả định lãi suất ở ngày đang chọn.</p></div></div><div class="chart-controls"><label for="curveScenario">Kịch bản</label><select id="curveScenario"></select></div><div id="curveChart" class="chart" role="img" aria-label="Biểu đồ đường cong zero rate"></div></section><section class="panel chart-panel price-path-panel"><div class="chart-head"><div><h2>Giá trái phiếu suy từ đường cong</h2><p class="sub">Dirty price mô hình trên 100 mệnh giá, trước phí bán và chiết khấu thanh khoản. Đây không phải giá khớp lệnh hay giá trị cả vị thế tại H.</p></div></div><div id="pricePathChart" class="chart price-path-chart" role="img" aria-label="Biểu đồ giá dirty mô hình của trái phiếu theo ngày giá trị"></div><p id="pricePathInsight" class="price-path-insight"></p></section></details>
+            <div class="charts">
+              <details class="chart-detail"><summary>Toàn bộ tổ hợp ngày bán và tỷ lệ bán</summary><div class="panel chart-panel"><div class="chart-head"><div><h2>Bán một đợt: ngày × tỷ lệ</h2><p class="sub" id="heatSummary">Ngày bán × tỷ lệ bán.</p></div></div><div class="table-wrap"><table><thead><tr><th>Ngày bán</th><th>Tỷ lệ bán</th><th>Giá trị tại mục tiêu /100</th><th>So với giữ /100</th></tr></thead><tbody id="singleSaleRows"></tbody></table></div><div id="heatChart" class="chart" role="img" aria-label="Heatmap bán một đợt"></div></div></details>
+              <section class="panel chart-panel full"><div class="chart-head"><div><h2>Cấu phần giá trị tại ngày mục tiêu</h2><p class="sub">Xem riêng tiền đã nhận và giá trị ước tính của phần trái phiếu còn nắm giữ.</p></div></div><div class="chart-controls"><label for="planChoice">Phương án</label><select id="planChoice"><option value="expected_maximiser">Tối ưu tổng thể</option><option value="hold_to_h">Giữ đến ngày mục tiêu</option><option value="best_single_sale">Bán 1 đợt</option><option value="best_two_tranche">Bán 2 đợt</option></select><label for="ledgerScenario">Kịch bản</label><select id="ledgerScenario"></select></div><p class="sub" id="ledgerBasis"></p><div id="ledgerChart" class="chart chart-wide" role="img" aria-label="Đóng góp từng dòng sổ cái tại H"></div><div class="table-wrap"><table><thead><tr><th>Khoản mục</th><th>Ngày dòng tiền</th><th>Bản chất</th><th>Giá trị tại ngày</th><th>Đóng góp tại H</th></tr></thead><tbody id="ledgerRows"></tbody></table></div></section>
+            </div>
+            <p class="foot" id="chartWarning" hidden>ECharts cục bộ chưa tải được. Bảng và KPI vẫn hiển thị từ JSON Python.</p><p class="foot">MODEL_ONLY · Không suy ra giá khớp lệnh hoặc kết quả ngoài mẫu.</p>
+          </section>
+        </section>
+        <section id="regretWorkspace" role="tabpanel" aria-labelledby="tabRegret" hidden>
+          <div class="state-box" id="regretLoading" hidden><strong class="loading-pulse">Đang tải kết quả P3-B…</strong><span>Kiểm tra cấu trúc JSON trước khi hiển thị.</span></div>
+          <div class="state-box" id="regretEmpty"><strong>Chưa có kết quả Regret</strong><span>Tải ví dụ tổng hợp hoặc chọn JSON do harness tạo.</span></div>
+          <section id="regretResults" hidden aria-label="Kết quả Regret">
+            <div class="section-head"><div><span class="eyebrow">Kết quả mô phỏng</span><h2>Chênh lệch khi nhìn lại từng kỳ</h2></div><span class="pill warn" id="regretTier">MODEL_ONLY</span></div>
+            <div class="regret-stats"><article class="stat emphasis"><h3>Tổng chênh lệch quyết định / 100 mệnh giá</h3><strong id="regretTotal">—</strong></article><article class="stat"><h3>Trung bình mỗi kỳ / 100 mệnh giá</h3><strong id="regretMean">—</strong></article><article class="stat"><h3>Số kỳ mô phỏng</h3><strong id="regretEpisodes">—</strong></article></div>
+            <p class="regret-plain">Chênh lệch quyết định = giá trị của phương án tốt nhất khi nhìn lại trừ giá trị của <em>chính kế hoạch đã chọn</em> trên cùng diễn biến dùng để đánh giá. Nó khác mức hụt so với dự kiến ban đầu.</p>
+            <p class="scope-line" id="regretProtocolPlain"></p>
+            <section class="panel regret-panel"><div class="regret-view-head"><div><h2>Chọn một kỳ để xem điều gì đã xảy ra</h2><p class="sub">Kế hoạch ban đầu được giữ nguyên khi đánh giá lại.</p></div></div><div class="table-wrap"><table class="regret-table"><thead><tr><th>Kỳ</th><th>Ngày quyết định → mục tiêu</th><th>Kế hoạch đã chọn</th><th>Phương án nhìn lại</th><th>Dự kiến /100</th><th>Đã chọn /100</th><th>Nhìn lại /100</th><th>Chênh lệch /100</th></tr></thead><tbody id="regretRows"></tbody></table></div><div id="regretDetail" class="regret-detail"></div><p class="foot" id="regretBasis"></p></section>
+            <details class="regret-chart-detail"><summary>Xem biểu đồ và chi tiết phương pháp</summary><div class="panel regret-panel"><div class="regret-view-head"><div><h2>Dự kiến → Kế hoạch đã chọn → Nhìn lại</h2><p class="sub">Cả ba giá trị trên 100 mệnh giá. Hai cột đánh giá dùng cùng đường cong đã xảy ra trong mô phỏng.</p></div><span class="tag amber" id="regretProtocol">PRIMARY_ONE_SALE</span></div><div id="regretChart" class="chart" role="img" aria-label="Biểu đồ so sánh tài sản cuối kỳ theo kỳ mô phỏng"></div><p class="regret-summary" id="regretMeta"></p><p class="foot" id="regretScope"></p></div></details>
+            <p class="foot">Dữ liệu ví dụ là synthetic. EX_POST_EXPLORATORY không có tuyên bố point-in-time; không dùng kết quả này để suy ra khả năng thực hiện giao dịch.</p>
+          </section>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script src="./echarts-6.1.0.min.js"></script>
+  <script src="./ryc_perfect_foresight_workspace.js"></script>
+</body>
+</html>

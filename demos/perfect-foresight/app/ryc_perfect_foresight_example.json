@@ -1,0 +1,45 @@
+{
+  "model_variant": "perfect_foresight_v1",
+  "mode": "holder",
+  "decision_date": "2026-01-05",
+  "terminal_date": "2026-03-05",
+  "position_face_value_vnd": 100000000,
+  "bond": {
+    "identifier": "SYNTHETIC-ZERO-2027",
+    "issue_date": "2025-01-05",
+    "cashflows": [
+      {"payment_date": "2027-01-05", "amount_per_100": 100}
+    ]
+  },
+  "execution": {
+    "settlement_lag_business_days": 0,
+    "sell_fee_bps": 8,
+    "fixed_ticket_fee_vnd": 10000,
+    "market_impact_bps_full_sale": 18,
+    "market_impact_exponent": 2
+  },
+  "liquidation": {
+    "candidate_dates": ["2026-01-05", "2026-02-05"],
+    "sale_step_pct": 50,
+    "min_sale_pct": 50,
+    "max_tranches": 2
+  },
+  "curve_path": [
+    {"value_date": "2026-01-05", "curve_nodes": [
+      {"tenor_years": 0.25, "zero_rate_decimal": 0.04},
+      {"tenor_years": 2, "zero_rate_decimal": 0.04}
+    ]},
+    {"value_date": "2026-02-05", "curve_nodes": [
+      {"tenor_years": 0.25, "zero_rate_decimal": 0.04},
+      {"tenor_years": 2, "zero_rate_decimal": 0.04}
+    ]},
+    {"value_date": "2026-03-05", "curve_nodes": [
+      {"tenor_years": 0.25, "zero_rate_decimal": 0.04},
+      {"tenor_years": 2, "zero_rate_decimal": 0.04}
+    ]}
+  ],
+  "reinvestment_path": [
+    {"start_date": "2026-01-05", "end_date": "2026-02-05", "rate_cc_decimal": 0.04},
+    {"start_date": "2026-02-05", "end_date": "2026-03-05", "rate_cc_decimal": 0.04}
+  ]
+}

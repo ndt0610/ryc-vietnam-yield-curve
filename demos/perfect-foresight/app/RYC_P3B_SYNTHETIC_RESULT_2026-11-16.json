@@ -1,0 +1,309 @@
+{
+  "schema_version": "RYC-P3B-SIM-V1",
+  "harness_revision": "2026-11-16-unchanged-curve-v1",
+  "research_tier": "MODEL_ONLY",
+  "evidence_status": "CURVE_LEVEL_SIMULATION",
+  "regret_label": "CURVE_MODEL_REGRET",
+  "point_in_time_claim": false,
+  "protocol": "PRIMARY_ONE_SALE",
+  "input_sha256": "feb284db7a0762a727f6141c26f73a93f1cd924ac1b02ead845e811eeefbf204",
+  "episode_count": 2,
+  "total_curve_model_regret_per_100_face": 8.2016673023968,
+  "mean_curve_model_regret_per_100_face": 4.1008336511984,
+  "episodes": [
+    {
+      "episode_id": "synthetic-window-1",
+      "decision_date": "2026-01-05",
+      "terminal_date": "2026-03-05",
+      "information_cutoff_at": "2026-01-05T12:00:00+00:00",
+      "forecast_method": "UNCHANGED_CURVE_FORECAST",
+      "forecast_source_value_date": "2026-01-05",
+      "forecast_payload_sha256": "b31ca14607c623d8e54a648308f2aac2ea2a922aa7ba4865fc0a98e34c64a064",
+      "selected_plan_sha256": "566db4eadeea9f0d287c479d1022c2e63cb5f151989242164403edd670c5bf81",
+      "realised_payload_sha256": "5626c5236ce63f828bef5c7c5b9b5565abc108afc130df672009de577ac6f212",
+      "selected_plan": {
+        "kind": "hold_to_h",
+        "sales": [],
+        "total_sold_pct_initial_face": 0,
+        "remaining_pct_initial_face": 100,
+        "expected_terminal_wealth": {
+          "per_100_face": 96.70439897283688,
+          "for_position_vnd": 96704398.97283688
+        },
+        "scenario_terminal_wealth_per_100": {
+          "Perfect Foresight": 96.70439897283688
+        },
+        "cash_ledger": {
+          "Perfect Foresight": [
+            {
+              "kind": "model_mark_proxy",
+              "cash_date": "2026-03-05",
+              "is_cash": false,
+              "cash_amount": {
+                "per_100_face": 96.70439897283688,
+                "for_position_vnd": 96704398.97283688
+              },
+              "terminal_contribution": {
+                "per_100_face": 96.70439897283688,
+                "for_position_vnd": 96704398.97283688
+              }
+            }
+          ]
+        },
+        "terminal_value_basis": "MODEL_MARK_PROXY"
+      },
+      "strategy_fixed_plan": {
+        "kind": "hold_to_h",
+        "sales": [],
+        "total_sold_pct_initial_face": 0,
+        "remaining_pct_initial_face": 100,
+        "expected_terminal_wealth": {
+          "per_100_face": 88.1908163749609,
+          "for_position_vnd": 88190816.3749609
+        },
+        "scenario_terminal_wealth_per_100": {
+          "Perfect Foresight": 88.1908163749609
+        },
+        "cash_ledger": {
+          "Perfect Foresight": [
+            {
+              "kind": "model_mark_proxy",
+              "cash_date": "2026-03-05",
+              "is_cash": false,
+              "cash_amount": {
+                "per_100_face": 88.1908163749609,
+                "for_position_vnd": 88190816.3749609
+              },
+              "terminal_contribution": {
+                "per_100_face": 88.1908163749609,
+                "for_position_vnd": 88190816.3749609
+              }
+            }
+          ]
+        },
+        "terminal_value_basis": "MODEL_MARK_PROXY"
+      },
+      "hindsight_oracle": {
+        "kind": "single_sale",
+        "sales": [
+          {
+            "execution_date": "2026-01-05",
+            "settlement_date": "2026-01-05",
+            "sale_pct_initial_face": 100.0,
+            "model_dirty_bid_proxy_per_100": 96.08157444936445
+          }
+        ],
+        "total_sold_pct_initial_face": 100.0,
+        "remaining_pct_initial_face": 0.0,
+        "expected_terminal_wealth": {
+          "per_100_face": 96.3924836773577,
+          "for_position_vnd": 96392483.6773577
+        },
+        "scenario_terminal_wealth_per_100": {
+          "Perfect Foresight": 96.3924836773577
+        },
+        "cash_ledger": {
+          "Perfect Foresight": [
+            {
+              "kind": "sale_gross",
+              "cash_date": "2026-01-05",
+              "is_cash": true,
+              "cash_amount": {
+                "per_100_face": 96.08157444936445,
+                "for_position_vnd": 96081574.44936445
+              },
+              "terminal_contribution": {
+                "per_100_face": 96.3924836773577,
+                "for_position_vnd": 96392483.6773577
+              }
+            },
+            {
+              "kind": "sell_fee",
+              "cash_date": "2026-01-05",
+              "is_cash": true,
+              "cash_amount": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              },
+              "terminal_contribution": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              }
+            },
+            {
+              "kind": "liquidity_haircut",
+              "cash_date": "2026-01-05",
+              "is_cash": true,
+              "cash_amount": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              },
+              "terminal_contribution": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              }
+            },
+            {
+              "kind": "market_impact",
+              "cash_date": "2026-01-05",
+              "is_cash": true,
+              "cash_amount": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              },
+              "terminal_contribution": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              }
+            },
+            {
+              "kind": "fixed_ticket_fee",
+              "cash_date": "2026-01-05",
+              "is_cash": true,
+              "cash_amount": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              },
+              "terminal_contribution": {
+                "per_100_face": -0.0,
+                "for_position_vnd": -0.0
+              }
+            }
+          ]
+        },
+        "terminal_value_basis": "CONTRACTUAL_CASH_OR_SALE"
+      },
+      "strategy_wealth_per_100_face": 88.1908163749609,
+      "oracle_wealth_per_100_face": 96.3924836773577,
+      "curve_model_regret_per_100_face": 8.2016673023968,
+      "curve_model_regret_vnd": 8201667.302396804,
+      "regret_theorem_scope": "SINGLE_SCENARIO_SAME_FEASIBLE_SET",
+      "terminal_value_basis": {
+        "strategy": "MODEL_MARK_PROXY",
+        "oracle": "CONTRACTUAL_CASH_OR_SALE"
+      }
+    },
+    {
+      "episode_id": "synthetic-window-2",
+      "decision_date": "2026-03-05",
+      "terminal_date": "2026-05-05",
+      "information_cutoff_at": "2026-03-05T12:00:00+00:00",
+      "forecast_method": "UNCHANGED_CURVE_FORECAST",
+      "forecast_source_value_date": "2026-03-05",
+      "forecast_payload_sha256": "ae233b03f7a8ece903ca5ffda1ca6100e40d6fb3397de0bde2b784339443bb7f",
+      "selected_plan_sha256": "566db4eadeea9f0d287c479d1022c2e63cb5f151989242164403edd670c5bf81",
+      "realised_payload_sha256": "ae233b03f7a8ece903ca5ffda1ca6100e40d6fb3397de0bde2b784339443bb7f",
+      "selected_plan": {
+        "kind": "hold_to_h",
+        "sales": [],
+        "total_sold_pct_initial_face": 0,
+        "remaining_pct_initial_face": 100,
+        "expected_terminal_wealth": {
+          "per_100_face": 90.42801949694928,
+          "for_position_vnd": 90428019.49694927
+        },
+        "scenario_terminal_wealth_per_100": {
+          "Perfect Foresight": 90.42801949694928
+        },
+        "cash_ledger": {
+          "Perfect Foresight": [
+            {
+              "kind": "model_mark_proxy",
+              "cash_date": "2026-05-05",
+              "is_cash": false,
+              "cash_amount": {
+                "per_100_face": 90.42801949694928,
+                "for_position_vnd": 90428019.49694927
+              },
+              "terminal_contribution": {
+                "per_100_face": 90.42801949694928,
+                "for_position_vnd": 90428019.49694927
+              }
+            }
+          ]
+        },
+        "terminal_value_basis": "MODEL_MARK_PROXY"
+      },
+      "strategy_fixed_plan": {
+        "kind": "hold_to_h",
+        "sales": [],
+        "total_sold_pct_initial_face": 0,
+        "remaining_pct_initial_face": 100,
+        "expected_terminal_wealth": {
+          "per_100_face": 90.42801949694928,
+          "for_position_vnd": 90428019.49694927
+        },
+        "scenario_terminal_wealth_per_100": {
+          "Perfect Foresight": 90.42801949694928
+        },
+        "cash_ledger": {
+          "Perfect Foresight": [
+            {
+              "kind": "model_mark_proxy",
+              "cash_date": "2026-05-05",
+              "is_cash": false,
+              "cash_amount": {
+                "per_100_face": 90.42801949694928,
+                "for_position_vnd": 90428019.49694927
+              },
+              "terminal_contribution": {
+                "per_100_face": 90.42801949694928,
+                "for_position_vnd": 90428019.49694927
+              }
+            }
+          ]
+        },
+        "terminal_value_basis": "MODEL_MARK_PROXY"
+      },
+      "hindsight_oracle": {
+        "kind": "hold_to_h",
+        "sales": [],
+        "total_sold_pct_initial_face": 0,
+        "remaining_pct_initial_face": 100,
+        "expected_terminal_wealth": {
+          "per_100_face": 90.42801949694928,
+          "for_position_vnd": 90428019.49694927
+        },
+        "scenario_terminal_wealth_per_100": {
+          "Perfect Foresight": 90.42801949694928
+        },
+        "cash_ledger": {
+          "Perfect Foresight": [
+            {
+              "kind": "model_mark_proxy",
+              "cash_date": "2026-05-05",
+              "is_cash": false,
+              "cash_amount": {
+                "per_100_face": 90.42801949694928,
+                "for_position_vnd": 90428019.49694927
+              },
+              "terminal_contribution": {
+                "per_100_face": 90.42801949694928,
+                "for_position_vnd": 90428019.49694927
+              }
+            }
+          ]
+        },
+        "terminal_value_basis": "MODEL_MARK_PROXY"
+      },
+      "strategy_wealth_per_100_face": 90.42801949694928,
+      "oracle_wealth_per_100_face": 90.42801949694928,
+      "curve_model_regret_per_100_face": 0.0,
+      "curve_model_regret_vnd": 0.0,
+      "regret_theorem_scope": "SINGLE_SCENARIO_SAME_FEASIBLE_SET",
+      "terminal_value_basis": {
+        "strategy": "MODEL_MARK_PROXY",
+        "oracle": "MODEL_MARK_PROXY"
+      }
+    }
+  ],
+  "scope": {
+    "reference": "SYNTHETIC_ZERO_COUPON",
+    "settlement": "SAME_DAY_MODEL_ASSUMPTION",
+    "day_count": "ACT/365.25_V3_MODEL_ASSUMPTION",
+    "cash_benchmark": "DECLARED_CONTINUOUS_MODEL_RATE",
+    "execution": "MODEL_PRICES_NO_FILLS",
+    "public_empirical_runner": "EMPIRICAL_EXECUTION_LOCKED",
+    "multi_scenario_note": "Per-scenario regret need not be nonnegative for a weighted-expectation oracle."
+  }
+}

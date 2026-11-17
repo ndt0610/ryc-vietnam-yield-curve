@@ -1,18 +1,62 @@
-# RYC Perfect Foresight — demo quyết định bán
+# Perfect Foresight V3 — giữ hay bán trái phiếu?
 
-**Câu hỏi của demo:** nếu đã biết trước toàn bộ đường giá giả định, bán trái phiếu ở tháng nào (`t*`) và bán bao nhiêu phần trăm (`q*`) để giá trị tiền tại kỳ cuối `H` lớn nhất?
+Đây là workspace phân tích quyết định mới nhất của RYC. Người xem khai báo đường cong lợi suất và các điều kiện mô hình, sau đó so sánh giữ đến ngày mục tiêu với bán một hoặc hai đợt. **Python V3 tính giá và dòng tiền; JavaScript chỉ dựng giao diện và hiển thị kết quả.**
 
-![Giao diện demo ở kịch bản cơ sở: giữ đến H cao hơn điểm bán tốt nhất trên lưới; điểm bán tốt nhất là 10% vào ngày 05/07/2027.](perfect-foresight-default-case.png)
+## Kết quả mẫu cho thấy điều gì?
 
-*Ảnh được chụp từ giao diện demo ở kịch bản cơ sở. Điểm bán tốt nhất trong lưới là 10% ở tháng 18, nhưng giữ đến H vẫn cho W(H) cao hơn khoảng 10.107 VND trên danh mục 100 triệu VND. Đây là kết quả của đường giá giả định đã biết trước, không phải dự báo.*
+Trong fixture tổng hợp, giữ đến ngày mục tiêu cho giá trị mô hình **96.704.399 VND** trên vị thế 100 triệu VND. Phương án kế tiếp trong toàn bộ lưới kém **92.229 VND**, trong khi ngưỡng kinh tế khai báo là **96.704 VND**. Giao diện vì vậy phân biệt hai ý: giữ đứng đầu về số học trong giả định hiện tại, nhưng mức chênh chưa vượt ngưỡng kinh tế.
 
-[Mở trang demo](ryc_perfect_foresight_demo.html) trực tiếp trong trình duyệt. Chọn một trong bốn kịch bản, đổi chi phí hoặc đường giá, rồi quan sát:
+![Kết luận của workspace V3: giữ đến ngày mục tiêu đứng đầu trong lưới; chênh lệch 92.229 VND chưa vượt ngưỡng kinh tế 96.704 VND.](screenshots/decision-summary.png)
 
-- Tháng bán và tỷ lệ bán được chọn trên **lưới phương án bán thật `q>0`**.
-- Heatmap `(tháng, tỷ lệ)`, đường giá và giá trị mục tiêu `W(H)`; các ô gần tối ưu được đánh dấu riêng.
-- Bảng so sánh bán ngay, bán sớm, bán muộn và **giữ đến H**. Phương án giữ không bị gắn một tháng bán giả.
-- Biểu đồ độ nhạy và phần giải thích vì sao thay tham số làm lựa chọn đổi.
+*Dữ liệu zero-coupon và đường cong đều được tạo để minh họa. Đây không phải báo giá trái phiếu thật.*
 
-Mô hình tính tiền bán sau phí/thuế/tác động thị trường, tiền tái đầu tư, coupon, giá trị phần còn nắm giữ và chi phí/rủi ro theo giả định đã nhập. [Báo cáo kỹ thuật](RYC_PERFECT_FORESIGHT_DEMO_REPORT.md) ghi công thức và phạm vi.
+## Trong giao diện có gì?
 
-**Ranh giới:** đường giá tương lai được cho sẵn theo giả định perfect foresight. Demo này minh họa cơ chế tối ưu; nó không dự báo thị trường Việt Nam, không phải kết luận của mô hình RYC chính và không đưa ra khuyến nghị giao dịch.
+- **Kết luận trước, giả định sau:** phương án đứng đầu, giá trị tại mục tiêu, chênh lệch so với phương án kế tiếp và phần vị thế còn giữ.
+- **So sánh cùng mốc:** bảng và biểu đồ đặt giữ, bán một đợt, bán hai đợt cạnh nhau tại cùng ngày mục tiêu.
+- **Xem đường cong theo ngày:** timeline nối ngày định giá với zero curve và giá dirty mô hình do Python trả về. Giá mô hình không phải giá khớp lệnh hay giá trị của toàn bộ vị thế.
+- **Kiểm tra Regret:** tab thứ hai đọc kết quả mô phỏng P3-B tổng hợp; kế hoạch đã chọn không bị tối ưu lại trên đường cong dùng để đánh giá.
+- **Xem cấu phần:** sổ cái tách tiền đã nhận khỏi model mark của phần trái phiếu chưa bán.
+
+![Biểu đồ và bảng giá trị tại ngày mục tiêu cho phương án giữ, bán một đợt và bán hai đợt.](screenshots/hold-vs-sell-comparison.png)
+
+![Timeline đường cong, zero curve và giá trái phiếu dirty mô hình do Python V3 tính theo ngày.](screenshots/curve-and-model-price.png)
+
+## Chạy trên máy
+
+Cần Python 3.11 trở lên; demo dùng thư viện chuẩn của Python. Từ thư mục gốc repository, chạy:
+
+```bash
+python demos/perfect-foresight/app/ryc_v3_local_server.py --host 127.0.0.1 --port 8772
+```
+
+Mở <http://127.0.0.1:8772/ryc_perfect_foresight_workspace.html>. Nếu trang đang mở từ `file://`, nó sẽ hiện hướng dẫn chạy server cục bộ thay vì gọi API. UI, font và ECharts đều nằm trong repository; request phân tích chỉ đi tới server localhost.
+
+## Chạy test
+
+```bash
+python demos/perfect-foresight/tests/ryc_perfect_foresight_tests.py
+node demos/perfect-foresight/tests/ryc_perfect_foresight_ui_tests.cjs
+```
+
+Test Python kiểm tra định giá, coupon/settlement, lưới phương án và sổ cái. Test Node kiểm tra preset, slider/payload, timeline, trạng thái kết quả cũ và hợp đồng hiển thị.
+
+## Cấu trúc
+
+- `app/ryc_v3_engine.py` — nguồn tính toán Python V3.
+- `app/ryc_v3_local_server.py` — server localhost cho file tĩnh, health check và API phân tích.
+- `app/ryc_perfect_foresight_workspace.html` — giao diện quyết định và Regret Viewer.
+- `app/ryc_perfect_foresight_workspace.js` — dựng payload, gọi API và hiển thị response; không chứa công thức định giá.
+- `app/ryc_perfect_foresight_example.json` — fixture phân tích tổng hợp.
+- `app/RYC_P3B_SYNTHETIC_RESULT_2026-11-16.json` — ví dụ Regret tổng hợp.
+- `app/fonts/`, `app/echarts-6.1.0-*` — asset và license của font/ECharts.
+- `screenshots/` — ảnh giao diện từ workspace V3.
+- `tests/` — test engine và giao diện.
+
+## Giới hạn cần đọc cùng kết quả
+
+- “Perfect Foresight” giả định biết trước đường cong lợi suất của cả kỳ; đây là điều kiện mô hình, **không phải dự báo**.
+- Fixture hiện tại là dữ liệu tổng hợp. Chưa có báo giá bid/fill hay kiểm định ngoài mẫu.
+- Khi ngày mục tiêu trước ngày đáo hạn, phần trái phiếu chưa bán được ghi nhận bằng model mark proxy; nó chưa phải tiền bán thu được.
+- Gate value date/day-count cho đường cong HNX vẫn chưa đạt, nên ví dụ không được gọi là backtest thị trường Việt Nam.
+- Chênh lệch/threshold là diagnostic theo giả định đầu vào, không phải kiểm định ý nghĩa thống kê hoặc khuyến nghị giao dịch.
